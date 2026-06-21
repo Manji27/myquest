@@ -1,10 +1,13 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { usePersistentState } from './lib/storage'
 import { dayScore, levelFromXp, maxDayScore, totalXp } from './lib/game'
+import { computeStats } from './lib/stats'
+import { ACHIEVEMENTS, unlockedIds, type Achievement } from './lib/achievements'
 import { todayKey } from './lib/date'
 import type { DayLog } from './types'
 import { Header } from './components/Header'
 import { Memories } from './components/Memories'
+import { Progression } from './components/Progression'
 import { DayNavigator } from './components/DayNavigator'
 import { PowerGauge } from './components/PowerGauge'
 import { QuestCard } from './components/QuestCard'
@@ -12,14 +15,16 @@ import { ScoreCurve } from './components/ScoreCurve'
 import { PositiveEvent } from './components/PositiveEvent'
 import { QuestEditor } from './components/QuestEditor'
 import { Confetti } from './components/Confetti'
+import { AchievementToast } from './components/AchievementToast'
 
 const EMPTY_LOG = (date: string): DayLog => ({ date, completed: [], positiveEvent: '' })
 
 export default function App() {
   const [state, setState] = usePersistentState()
   const [editorMode, setEditorMode] = useState<null | 'list' | 'new'>(null)
-  const [view, setView] = useState<'jour' | 'souvenirs'>('jour')
+  const [view, setView] = useState<'jour' | 'progression' | 'souvenirs'>('jour')
   const [confetti, setConfetti] = useState(0)
+  const [toast, setToast] = useState<Achievement | null>(null)
   const goalHit = useRef(false)
 
   const today = todayKey()
@@ -29,6 +34,32 @@ export default function App() {
   const max = maxDayScore(state.quests)
   const score = useMemo(() => dayScore(log, state.quests), [log, state.quests])
   const lvl = useMemo(() => levelFromXp(totalXp(state)), [state])
+
+  // détecte les succès nouvellement débloqués → toast + confettis
+  useEffect(() => {
+    const unlocked = unlockedIds(computeStats(state))
+    if (state.seenAchievements === undefined) {
+      // première visite après l'ajout : on marque l'existant comme déjà vu (pas de notif rétroactive)
+      setState((s) => ({ ...s, seenAchievements: unlocked }))
+      return
+    }
+    const fresh = unlocked.filter((id) => !state.seenAchievements!.includes(id))
+    if (fresh.length > 0) {
+      setState((s) => ({
+        ...s,
+        seenAchievements: [...new Set([...(s.seenAchievements ?? []), ...unlocked])],
+      }))
+      setToast(ACHIEVEMENTS.find((a) => a.id === fresh[0]) ?? null)
+      setConfetti((c) => c + 1)
+    }
+  }, [state, setState])
+
+  // efface le toast après quelques secondes
+  useEffect(() => {
+    if (!toast) return
+    const t = setTimeout(() => setToast(null), 5000)
+    return () => clearTimeout(t)
+  }, [toast])
 
   function patchLog(patch: Partial<DayLog>) {
     setState((s) => {
@@ -59,13 +90,15 @@ export default function App() {
   return (
     <div className="mx-auto w-full max-w-6xl px-4 md:px-6 lg:px-8 pb-10">
       <Confetti trigger={confetti} />
+      {toast && <AchievementToast achievement={toast} onClose={() => setToast(null)} />}
 
       <Header state={state} onOpenSettings={() => setEditorMode('list')} />
 
       {/* onglets */}
-      <div className="mt-4 glass rounded-2xl p-1 flex gap-1 max-w-md mx-auto">
+      <div className="mt-4 glass rounded-2xl p-1 flex gap-1 max-w-lg mx-auto">
         {([
           ['jour', '📅 Journal'],
+          ['progression', '🏆 Progression'],
           ['souvenirs', '📖 Souvenirs'],
         ] as const).map(([key, label]) => (
           <button
@@ -88,6 +121,8 @@ export default function App() {
             setView('jour')
           }}
         />
+      ) : view === 'progression' ? (
+        <Progression state={state} setState={setState} />
       ) : (
        <>
       <div className="mt-3 max-w-md mx-auto">

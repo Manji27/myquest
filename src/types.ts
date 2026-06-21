@@ -24,4 +24,6 @@ export type AppState = {
   quests: QuestDef[]
   logs: Record<string, DayLog> // clé = date
   version: number
+  /** ids des succès déjà notifiés (pour ne pas re-notifier) */
+  seenAchievements?: string[]
 }
