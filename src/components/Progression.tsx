@@ -4,14 +4,17 @@ import { computeStats } from '../lib/stats'
 import { ACHIEVEMENTS, isUnlocked } from '../lib/achievements'
 import { downloadBackup, parseBackup } from '../lib/backup'
 import type { CloudSync } from '../lib/useCloudSync'
+import { Heatmap } from './Heatmap'
+import { WeeklySummary } from './WeeklySummary'
 
 type Props = {
   state: AppState
   setState: (updater: (s: AppState) => AppState) => void
   cloud: CloudSync
+  onOpenDay: (key: string) => void
 }
 
-export function Progression({ state, setState, cloud }: Props) {
+export function Progression({ state, setState, cloud, onOpenDay }: Props) {
   const stats = useMemo(() => computeStats(state), [state])
   const fileRef = useRef<HTMLInputElement>(null)
   const [notice, setNotice] = useState<string | null>(null)
@@ -40,6 +43,12 @@ export function Progression({ state, setState, cloud }: Props) {
     <div className="mt-4 space-y-6">
       {/* synchronisation cloud */}
       <CloudCard cloud={cloud} />
+
+      {/* heatmap annuelle */}
+      <Heatmap state={state} onSelectDay={onOpenDay} />
+
+      {/* bilan de la semaine */}
+      <WeeklySummary state={state} />
 
       {/* résumé */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

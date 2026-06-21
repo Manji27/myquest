@@ -1,11 +1,11 @@
 import type { AppState } from '../types'
-import { currentStreak, levelFromXp, totalXp } from '../lib/game'
+import { currentStreakWithFreeze, levelFromXp, totalXp } from '../lib/game'
 import { prettyDate, todayKey } from '../lib/date'
 
 export function Header({ state, onOpenSettings }: { state: AppState; onOpenSettings: () => void }) {
   const xp = totalXp(state)
   const lvl = levelFromXp(xp)
-  const streak = currentStreak(state)
+  const { streak, usedFreeze } = currentStreakWithFreeze(state)
 
   return (
     <header className="pt-2">
@@ -17,10 +17,11 @@ export function Header({ state, onOpenSettings }: { state: AppState; onOpenSetti
           </h1>
         </div>
         <div className="flex items-center gap-2">
-          <div className="glass flex items-center gap-1.5 rounded-full px-3 py-1.5">
+          <div className="glass flex items-center gap-1.5 rounded-full px-3 py-1.5" title={usedFreeze ? 'Joker de série utilisé (1 jour manqué gelé)' : 'Série en cours'}>
             <span className={streak > 0 ? 'animate-flame text-lg' : 'text-lg opacity-40'}>🔥</span>
             <span className="font-bold">{streak}</span>
             <span className="text-xs text-slate-400">j</span>
+            {usedFreeze && <span className="text-sm" title="Joker utilisé">❄️</span>}
           </div>
           <button
             onClick={onOpenSettings}

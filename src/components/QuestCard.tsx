@@ -5,10 +5,11 @@ import { DIFFICULTY } from '../data/defaultQuests'
 type Props = {
   quest: QuestDef
   done: boolean
+  streak?: number
   onToggle: () => void
 }
 
-export function QuestCard({ quest, done, onToggle }: Props) {
+export function QuestCard({ quest, done, streak = 0, onToggle }: Props) {
   const [floating, setFloating] = useState(false)
 
   function handle() {
@@ -41,11 +42,14 @@ export function QuestCard({ quest, done, onToggle }: Props) {
         <div className={`font-semibold truncate ${done ? 'text-white' : 'text-slate-200'}`}>
           {quest.label}
         </div>
-        <div className="text-xs font-medium flex items-center gap-1.5">
+        <div className="text-xs font-medium flex items-center gap-1.5 flex-wrap">
           <span style={{ color: quest.color }}>+{quest.xp} XP</span>
           <span className="text-slate-500">
             {DIFFICULTY[quest.difficulty].dot} {DIFFICULTY[quest.difficulty].label}
           </span>
+          {streak >= 2 && (
+            <span className="text-orange-400 font-bold">🔥{streak}</span>
+          )}
         </div>
       </div>
 

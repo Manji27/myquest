@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { usePersistentState } from './lib/storage'
-import { levelFromXp, questsForDate, totalXp } from './lib/game'
+import { levelFromXp, questsForDate, questStreak, totalXp } from './lib/game'
 import { computeStats } from './lib/stats'
 import { ACHIEVEMENTS, unlockedIds, type Achievement } from './lib/achievements'
 import { useCloudSync } from './lib/useCloudSync'
@@ -9,6 +9,7 @@ import type { DayLog } from './types'
 import { Header } from './components/Header'
 import { Memories } from './components/Memories'
 import { Progression } from './components/Progression'
+import { OnThisDay } from './components/OnThisDay'
 import { DayNavigator } from './components/DayNavigator'
 import { PowerGauge } from './components/PowerGauge'
 import { QuestCard } from './components/QuestCard'
@@ -132,7 +133,15 @@ export default function App() {
           }}
         />
       ) : view === 'progression' ? (
-        <Progression state={state} setState={setState} cloud={cloud} />
+        <Progression
+          state={state}
+          setState={setState}
+          cloud={cloud}
+          onOpenDay={(key) => {
+            setSelectedDate(key)
+            setView('jour')
+          }}
+        />
       ) : (
        <>
       <div className="mt-3 max-w-md mx-auto">
@@ -171,6 +180,7 @@ export default function App() {
                   key={q.id}
                   quest={q}
                   done={log.completed.includes(q.id)}
+                  streak={questStreak(state, q)}
                   onToggle={() => toggleQuest(q.id)}
                 />
               ))}
@@ -210,6 +220,8 @@ export default function App() {
             value={log.positiveEvent}
             onChange={(text) => patchLog({ positiveEvent: text })}
           />
+
+          <OnThisDay state={state} dateKey={selectedDate} onOpenDay={setSelectedDate} />
         </div>
       </div>
        </>

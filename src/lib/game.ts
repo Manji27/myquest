@@ -89,6 +89,58 @@ function hasActivity(state: AppState, key: string): boolean {
   return !!log && log.completed.length > 0
 }
 
+/**
+ * Série avec « joker » : tolère UN jour manqué dans la série en cours
+ * (à condition qu'un jour actif le précède). Renvoie aussi si le joker a servi.
+ */
+export function currentStreakWithFreeze(state: AppState): { streak: number; usedFreeze: boolean } {
+  let streak = 0
+  let usedFreeze = false
+  let key = todayKey()
+  if (!hasActivity(state, key)) key = addDays(key, -1)
+  for (let guard = 0; guard < 3650; guard++) {
+    if (hasActivity(state, key)) {
+      streak++
+      key = addDays(key, -1)
+      continue
+    }
+    // jour manqué : on le « gèle » une seule fois si un jour actif le précède
+    if (!usedFreeze && streak > 0 && hasActivity(state, addDays(key, -1))) {
+      usedFreeze = true
+      key = addDays(key, -1)
+      continue
+    }
+    break
+  }
+  return { streak, usedFreeze }
+}
+
+/** Série propre à une quête : jours consécutifs PRÉVUS où elle a été accomplie. */
+export function questStreak(state: AppState, quest: QuestDef): number {
+  let streak = 0
+  let key = todayKey()
+  let isToday = true
+  for (let guard = 0; guard < 3650; guard++) {
+    const weekday = keyToDate(key).getDay()
+    if (!isQuestActiveOnWeekday(quest, weekday)) {
+      key = addDays(key, -1) // jour non prévu → on saute sans casser
+      isToday = false
+      continue
+    }
+    const done = state.logs[key]?.completed.includes(quest.id) ?? false
+    if (done) {
+      streak++
+    } else if (isToday) {
+      // aujourd'hui pas encore fait → ne casse pas la série
+    } else {
+      break
+    }
+    key = addDays(key, -1)
+    isToday = false
+  }
+  return streak
+}
+
 /** Petit message d'encouragement selon le ratio du jour. */
 export function dayVibe(ratio: number): { label: string; emoji: string } {
   if (ratio >= 1) return { label: 'Journée parfaite !', emoji: '🏆' }
