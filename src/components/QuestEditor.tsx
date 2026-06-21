@@ -7,6 +7,8 @@ type Props = {
   state: AppState
   setState: (updater: (s: AppState) => AppState) => void
   onClose: () => void
+  /** ouvre directement le formulaire de création */
+  startInNew?: boolean
 }
 
 function uid() {
@@ -15,13 +17,19 @@ function uid() {
 
 type Editing = { mode: 'new' } | { mode: 'edit'; quest: QuestDef } | null
 
-export function QuestEditor({ state, setState, onClose }: Props) {
-  const [editing, setEditing] = useState<Editing>(null)
+export function QuestEditor({ state, setState, onClose, startInNew }: Props) {
+  const [editing, setEditing] = useState<Editing>(startInNew ? { mode: 'new' } : null)
+
+  // depuis l'ajout rapide, on revient au tableau de bord ; sinon on revient à la liste
+  function leaveNew() {
+    if (startInNew) onClose()
+    else setEditing(null)
+  }
 
   function saveNew(data: { label: string; icon: string; color: string; difficulty: Difficulty }) {
     const q: QuestDef = { id: uid(), xp: DIFFICULTY[data.difficulty].xp, ...data }
     setState((s) => ({ ...s, quests: [...s.quests, q] }))
-    setEditing(null)
+    leaveNew()
   }
 
   function saveEdit(id: string, data: { label: string; icon: string; color: string; difficulty: Difficulty }) {

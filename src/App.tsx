@@ -4,6 +4,7 @@ import { dayScore, levelFromXp, maxDayScore, totalXp } from './lib/game'
 import { todayKey } from './lib/date'
 import type { DayLog } from './types'
 import { Header } from './components/Header'
+import { Memories } from './components/Memories'
 import { DayNavigator } from './components/DayNavigator'
 import { PowerGauge } from './components/PowerGauge'
 import { QuestCard } from './components/QuestCard'
@@ -16,7 +17,8 @@ const EMPTY_LOG = (date: string): DayLog => ({ date, completed: [], positiveEven
 
 export default function App() {
   const [state, setState] = usePersistentState()
-  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [editorMode, setEditorMode] = useState<null | 'list' | 'new'>(null)
+  const [view, setView] = useState<'jour' | 'souvenirs'>('jour')
   const [confetti, setConfetti] = useState(0)
   const goalHit = useRef(false)
 
@@ -58,10 +60,38 @@ export default function App() {
     <div className="mx-auto w-full max-w-6xl px-4 md:px-6 lg:px-8 pb-10">
       <Confetti trigger={confetti} />
 
-      <Header state={state} onOpenSettings={() => setSettingsOpen(true)} />
+      <Header state={state} onOpenSettings={() => setEditorMode('list')} />
 
+      {/* onglets */}
+      <div className="mt-4 glass rounded-2xl p-1 flex gap-1 max-w-xs mx-auto">
+        {([
+          ['jour', '📅 Journal'],
+          ['souvenirs', '📖 Souvenirs'],
+        ] as const).map(([key, label]) => (
+          <button
+            key={key}
+            onClick={() => setView(key)}
+            className={`flex-1 rounded-xl py-2 text-sm font-semibold transition ${
+              view === key ? 'bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white' : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {view === 'souvenirs' ? (
+        <Memories
+          state={state}
+          onOpenDay={(key) => {
+            setSelectedDate(key)
+            setView('jour')
+          }}
+        />
+      ) : (
+       <>
       <div className="mt-4">
-        <DayNavigator value={selectedDate} today={today} onChange={setSelectedDate} />
+        <DayNavigator value={selectedDate} today={today} state={state} onChange={setSelectedDate} />
       </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-12 lg:items-start">
@@ -99,14 +129,18 @@ export default function App() {
                   onToggle={() => toggleQuest(q.id)}
                 />
               ))}
-              {state.quests.length === 0 && (
-                <button
-                  onClick={() => setSettingsOpen(true)}
-                  className="w-full glass rounded-2xl p-6 text-slate-400 text-sm sm:col-span-2"
-                >
-                  Ajoute ta première quête pour commencer ⚔️
-                </button>
-              )}
+              {/* carte rapide d'ajout de quête */}
+              <button
+                onClick={() => setEditorMode('new')}
+                className="w-full rounded-2xl p-3 flex items-center gap-3 text-left text-slate-400 border border-dashed border-white/15 hover:border-indigo-400/50 hover:text-slate-200 hover:bg-white/5 active:scale-[0.98] transition"
+              >
+                <span className="grid place-items-center w-12 h-12 rounded-xl bg-white/5 text-2xl shrink-0">
+                  +
+                </span>
+                <span className="font-semibold">
+                  {state.quests.length === 0 ? 'Crée ta première quête ⚔️' : 'Ajouter une quête'}
+                </span>
+              </button>
             </div>
           </section>
         </div>
@@ -129,13 +163,20 @@ export default function App() {
           />
         </div>
       </div>
+       </>
+      )}
 
       <p className="text-center text-[11px] text-slate-600 pt-6">
         Tout est stocké en privé sur ton appareil 🔒
       </p>
 
-      {settingsOpen && (
-        <QuestEditor state={state} setState={setState} onClose={() => setSettingsOpen(false)} />
+      {editorMode && (
+        <QuestEditor
+          state={state}
+          setState={setState}
+          startInNew={editorMode === 'new'}
+          onClose={() => setEditorMode(null)}
+        />
       )}
     </div>
   )

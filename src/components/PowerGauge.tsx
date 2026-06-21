@@ -62,15 +62,15 @@ export function PowerGauge({ score, max, questsDone, questsTotal, level, xpToNex
 
         {/* mini-récap */}
         <div className="mt-3 space-y-1.5 text-sm">
-          {isToday ? (
+          {questsTotal === 0 ? (
+            <RecapRow icon="🎯" text="Ajoute des quêtes pour démarrer" />
+          ) : isToday ? (
             <RecapRow
-              icon="🎯"
+              icon={questsLeft === 0 ? '🏆' : '✅'}
               text={
                 questsLeft === 0
-                  ? questsTotal > 0
-                    ? 'Toutes les quêtes accomplies !'
-                    : 'Ajoute des quêtes pour démarrer'
-                  : `${questsLeft} quête${questsLeft > 1 ? 's' : ''} restante${questsLeft > 1 ? 's' : ''} aujourd'hui`
+                  ? `${questsDone}/${questsTotal} — toutes les quêtes accomplies !`
+                  : `${questsDone}/${questsTotal} quêtes accomplies aujourd'hui`
               }
             />
           ) : (

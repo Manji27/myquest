@@ -29,10 +29,18 @@ export function lastNDays(n: number, end: string = todayKey()): string[] {
 }
 
 const WEEKDAYS = ['dim', 'lun', 'mar', 'mer', 'jeu', 'ven', 'sam']
-const MONTHS = [
+export const MONTHS = [
   'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
   'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre',
 ]
+
+/** Lettres des jours, semaine commençant le lundi. */
+export const WEEKDAY_LETTERS = ['L', 'M', 'M', 'J', 'V', 'S', 'D']
+
+/** Construit une clé YYYY-MM-DD à partir d'année / mois (0-11) / jour. */
+export function ymdKey(year: number, month: number, day: number): string {
+  return toKey(new Date(year, month, day))
+}
 
 export function weekdayShort(key: string): string {
   return WEEKDAYS[keyToDate(key).getDay()]
