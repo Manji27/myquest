@@ -1,9 +1,10 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { AppState } from '../types'
 import { computeStats } from '../lib/stats'
 import { ACHIEVEMENTS, isUnlocked } from '../lib/achievements'
 import { downloadBackup, parseBackup } from '../lib/backup'
 import type { CloudSync } from '../lib/useCloudSync'
+import { disablePush, enablePush, isPushEnabled, localTimezone, pushSupported } from '../lib/push'
 import { Heatmap } from './Heatmap'
 import { WeeklySummary } from './WeeklySummary'
 
@@ -43,6 +44,9 @@ export function Progression({ state, setState, cloud, onOpenDay }: Props) {
     <div className="mt-4 space-y-6">
       {/* synchronisation cloud */}
       <CloudCard cloud={cloud} />
+
+      {/* rappel quotidien */}
+      <ReminderCard cloud={cloud} state={state} setState={setState} />
 
       {/* heatmap annuelle */}
       <Heatmap state={state} onSelectDay={onOpenDay} />
@@ -172,6 +176,113 @@ export function Progression({ state, setState, cloud, onOpenDay }: Props) {
 
 function formatTime(ts: number): string {
   return new Date(ts).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+}
+
+function ReminderCard({
+  cloud,
+  state,
+  setState,
+}: {
+  cloud: CloudSync
+  state: AppState
+  setState: (u: (s: AppState) => AppState) => void
+}) {
+  const [deviceOn, setDeviceOn] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState<string | null>(null)
+  const time = state.settings?.reminderTime ?? '20:00'
+
+  useEffect(() => {
+    isPushEnabled().then(setDeviceOn)
+  }, [])
+
+  if (!pushSupported) {
+    return (
+      <section className="glass rounded-2xl p-4">
+        <h3 className="text-sm font-bold text-indigo-300 mb-1">🔔 Rappel quotidien</h3>
+        <p className="text-xs text-slate-400">
+          Les notifications ne sont pas supportées sur cet appareil/navigateur. Sur iPhone, installe
+          d'abord l'app sur ton écran d'accueil.
+        </p>
+      </section>
+    )
+  }
+
+  if (!cloud.user) {
+    return (
+      <section className="glass rounded-2xl p-4">
+        <h3 className="text-sm font-bold text-indigo-300 mb-1">🔔 Rappel quotidien</h3>
+        <p className="text-xs text-slate-400">Connecte-toi (ci-dessus) pour activer les rappels.</p>
+      </section>
+    )
+  }
+
+  async function toggle() {
+    setBusy(true)
+    setErr(null)
+    try {
+      if (deviceOn) {
+        await disablePush()
+        setDeviceOn(false)
+        setState((s) => ({ ...s, settings: { ...s.settings, reminderEnabled: false } }))
+      } else {
+        const r = await enablePush(cloud.user!.id)
+        if (!r.ok) {
+          setErr(r.reason ?? 'Erreur')
+          setBusy(false)
+          return
+        }
+        setDeviceOn(true)
+        setState((s) => ({
+          ...s,
+          settings: { ...s.settings, reminderEnabled: true, reminderTime: time, tz: localTimezone() },
+        }))
+      }
+    } catch (e) {
+      setErr((e as Error)?.message ?? 'Erreur')
+    }
+    setBusy(false)
+  }
+
+  return (
+    <section className="glass rounded-2xl p-4">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h3 className="text-sm font-bold text-indigo-300 mb-0.5">🔔 Rappel quotidien</h3>
+          <p className="text-xs text-slate-400">
+            {deviceOn ? 'Tu recevras un rappel si ta journée n\'est pas validée.' : 'Active une notification pour ne pas casser ta série.'}
+          </p>
+        </div>
+        <button
+          onClick={toggle}
+          disabled={busy}
+          aria-pressed={deviceOn}
+          className={`shrink-0 w-14 h-8 rounded-full p-1 transition disabled:opacity-50 ${deviceOn ? 'bg-emerald-500/80' : 'bg-white/10'}`}
+        >
+          <span className={`block w-6 h-6 rounded-full bg-white transition-transform ${deviceOn ? 'translate-x-6' : ''}`} />
+        </button>
+      </div>
+
+      {deviceOn && (
+        <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/8">
+          <span className="text-sm text-slate-300">Heure du rappel</span>
+          <input
+            type="time"
+            value={time}
+            onChange={(e) =>
+              setState((s) => ({
+                ...s,
+                settings: { ...s.settings, reminderTime: e.target.value, tz: localTimezone() },
+              }))
+            }
+            className="rounded-lg bg-white/5 px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-indigo-400/40"
+          />
+        </div>
+      )}
+
+      {err && <p className="text-xs text-red-400 mt-2">⚠️ {err}</p>}
+    </section>
+  )
 }
 
 function CloudCard({ cloud }: { cloud: CloudSync }) {

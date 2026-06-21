@@ -11,7 +11,9 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      includeAssets: ['favicon.svg', 'push-handler.js'],
+      // importe le handler de notifications push dans le service worker généré
+      workbox: { importScripts: ['push-handler.js'] },
       manifest: {
         name: 'QuestLog — Journal & Quêtes',
         short_name: 'QuestLog',

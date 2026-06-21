@@ -30,4 +30,10 @@ export type AppState = {
   seenAchievements?: string[]
   /** horodatage (ms) de la dernière modification — sert à la synchro cloud */
   updatedAt?: number
+  /** préférences (rappel quotidien) */
+  settings?: {
+    reminderEnabled?: boolean
+    reminderTime?: string // "HH:MM" heure locale
+    tz?: string // fuseau IANA, ex. "Europe/Paris"
+  }
 }

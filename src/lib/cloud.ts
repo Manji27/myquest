@@ -53,3 +53,25 @@ export async function pushState(uid: string, state: AppState) {
     .upsert({ user_id: uid, state, updated_at: new Date().toISOString() })
   if (error) throw error
 }
+
+type PushSubJSON = { endpoint?: string; keys?: { p256dh?: string; auth?: string } }
+
+/** Enregistre (ou met à jour) l'abonnement push de l'utilisateur. */
+export async function saveSubscription(uid: string, sub: PushSubJSON) {
+  if (!supabase || !sub.endpoint) return
+  const { error } = await supabase.from('push_subscriptions').upsert(
+    {
+      user_id: uid,
+      endpoint: sub.endpoint,
+      p256dh: sub.keys?.p256dh,
+      auth: sub.keys?.auth,
+    },
+    { onConflict: 'endpoint' },
+  )
+  if (error) throw error
+}
+
+export async function removeSubscription(endpoint: string) {
+  if (!supabase) return
+  await supabase.from('push_subscriptions').delete().eq('endpoint', endpoint)
+}
