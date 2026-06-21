@@ -4,6 +4,8 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  // port figé : l'URL localhost reste http://localhost:5173 (cohérent avec les Redirect URLs Supabase)
+  server: { port: 5173, strictPort: true },
   plugins: [
     react(),
     tailwindcss(),
