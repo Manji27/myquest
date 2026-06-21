@@ -3,13 +3,15 @@ import type { AppState } from '../types'
 import { computeStats } from '../lib/stats'
 import { ACHIEVEMENTS, isUnlocked } from '../lib/achievements'
 import { downloadBackup, parseBackup } from '../lib/backup'
+import type { CloudSync } from '../lib/useCloudSync'
 
 type Props = {
   state: AppState
   setState: (updater: (s: AppState) => AppState) => void
+  cloud: CloudSync
 }
 
-export function Progression({ state, setState }: Props) {
+export function Progression({ state, setState, cloud }: Props) {
   const stats = useMemo(() => computeStats(state), [state])
   const fileRef = useRef<HTMLInputElement>(null)
   const [notice, setNotice] = useState<string | null>(null)
@@ -36,6 +38,9 @@ export function Progression({ state, setState }: Props) {
 
   return (
     <div className="mt-4 space-y-6">
+      {/* synchronisation cloud */}
+      <CloudCard cloud={cloud} />
+
       {/* résumé */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <SummaryCard label="Niveau" value={stats.level} accent="#818cf8" />
@@ -153,6 +158,111 @@ export function Progression({ state, setState }: Props) {
         </div>
       </section>
     </div>
+  )
+}
+
+function formatTime(ts: number): string {
+  return new Date(ts).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+}
+
+function CloudCard({ cloud }: { cloud: CloudSync }) {
+  const [email, setEmail] = useState('')
+  const [sent, setSent] = useState<string | null>(null)
+  const [sending, setSending] = useState(false)
+
+  async function submit() {
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) return
+    setSending(true)
+    const ok = await cloud.sendLink(email)
+    setSending(false)
+    if (ok) setSent(email.trim())
+  }
+
+  // cloud non configuré
+  if (!cloud.cloudEnabled) {
+    return (
+      <section className="glass rounded-2xl p-4">
+        <h3 className="text-sm font-bold text-indigo-300 mb-1 flex items-center gap-2">☁️ Synchronisation cloud</h3>
+        <p className="text-xs text-slate-400">
+          Pas encore configurée. Suis le guide <span className="text-slate-300 font-medium">SUPABASE.md</span> pour
+          activer la sauvegarde en ligne et l'accès multi-appareils.
+        </p>
+      </section>
+    )
+  }
+
+  // connecté
+  if (cloud.user) {
+    return (
+      <section className="glass rounded-2xl p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h3 className="text-sm font-bold text-indigo-300 mb-0.5 flex items-center gap-2">☁️ Synchronisation cloud</h3>
+            <p className="text-xs text-slate-400 truncate">{cloud.user.email}</p>
+            <p className="text-xs mt-1">
+              {cloud.status === 'syncing' && <span className="text-amber-400">⟳ Synchronisation…</span>}
+              {cloud.status === 'synced' && (
+                <span className="text-emerald-400">
+                  ✓ Synchronisé{cloud.lastSync ? ` à ${formatTime(cloud.lastSync)}` : ''}
+                </span>
+              )}
+              {cloud.status === 'error' && <span className="text-red-400">⚠️ {cloud.error}</span>}
+            </p>
+          </div>
+          <button
+            onClick={() => cloud.signOut()}
+            className="shrink-0 rounded-xl bg-white/5 hover:bg-white/10 px-3 py-2 text-sm font-medium active:scale-[0.97] transition"
+          >
+            Déconnexion
+          </button>
+        </div>
+      </section>
+    )
+  }
+
+  // déconnecté : lien envoyé
+  if (sent) {
+    return (
+      <section className="glass rounded-2xl p-4">
+        <h3 className="text-sm font-bold text-indigo-300 mb-1 flex items-center gap-2">📧 Vérifie tes emails</h3>
+        <p className="text-xs text-slate-400">
+          Un lien de connexion a été envoyé à <span className="text-slate-200 font-medium">{sent}</span>.
+          Ouvre-le sur cet appareil pour synchroniser tes données. (Pense à regarder les spams.)
+        </p>
+        <button onClick={() => setSent(null)} className="text-xs text-indigo-300 mt-2 underline">
+          Utiliser une autre adresse
+        </button>
+      </section>
+    )
+  }
+
+  // déconnecté : formulaire
+  return (
+    <section className="glass rounded-2xl p-4">
+      <h3 className="text-sm font-bold text-indigo-300 mb-1 flex items-center gap-2">☁️ Synchronisation cloud</h3>
+      <p className="text-xs text-slate-400 mb-3">
+        Connecte-toi pour sauvegarder tes données en ligne et les retrouver sur tous tes appareils.
+        Tu recevras un lien de connexion par email.
+      </p>
+      <div className="flex flex-col sm:flex-row gap-2">
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && submit()}
+          placeholder="ton@email.com"
+          className="flex-1 rounded-xl bg-white/5 p-2.5 text-sm outline-none focus:ring-2 focus:ring-indigo-400/40"
+        />
+        <button
+          onClick={submit}
+          disabled={sending || !/^\S+@\S+\.\S+$/.test(email.trim())}
+          className="rounded-xl bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-4 py-2.5 font-semibold disabled:opacity-40 active:scale-[0.98] transition"
+        >
+          {sending ? 'Envoi…' : 'Recevoir le lien'}
+        </button>
+      </div>
+      {cloud.error && <p className="text-xs text-red-400 mt-2">⚠️ {cloud.error}</p>}
+    </section>
   )
 }
 

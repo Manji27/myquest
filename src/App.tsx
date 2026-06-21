@@ -3,6 +3,7 @@ import { usePersistentState } from './lib/storage'
 import { dayScore, levelFromXp, maxDayScore, totalXp } from './lib/game'
 import { computeStats } from './lib/stats'
 import { ACHIEVEMENTS, unlockedIds, type Achievement } from './lib/achievements'
+import { useCloudSync } from './lib/useCloudSync'
 import { todayKey } from './lib/date'
 import type { DayLog } from './types'
 import { Header } from './components/Header'
@@ -20,7 +21,8 @@ import { AchievementToast } from './components/AchievementToast'
 const EMPTY_LOG = (date: string): DayLog => ({ date, completed: [], positiveEvent: '' })
 
 export default function App() {
-  const [state, setState] = usePersistentState()
+  const [state, setState, applyRemote] = usePersistentState()
+  const cloud = useCloudSync(state, applyRemote)
   const [editorMode, setEditorMode] = useState<null | 'list' | 'new'>(null)
   const [view, setView] = useState<'jour' | 'progression' | 'souvenirs'>('jour')
   const [confetti, setConfetti] = useState(0)
@@ -122,7 +124,7 @@ export default function App() {
           }}
         />
       ) : view === 'progression' ? (
-        <Progression state={state} setState={setState} />
+        <Progression state={state} setState={setState} cloud={cloud} />
       ) : (
        <>
       <div className="mt-3 max-w-md mx-auto">

@@ -26,4 +26,6 @@ export type AppState = {
   version: number
   /** ids des succès déjà notifiés (pour ne pas re-notifier) */
   seenAchievements?: string[]
+  /** horodatage (ms) de la dernière modification — sert à la synchro cloud */
+  updatedAt?: number
 }

@@ -17,8 +17,9 @@ Fonctionne sur **desktop et mobile** (PWA installable), **100% en local** — au
 - 📅 **Navigation entre les jours** (flèches, calendrier mois/année, ou clic sur la courbe)
 - 🏆 **Onglet Progression** : succès à débloquer (avec notification + confettis), statistiques (taux de réussite par quête, records)
 - 📖 **Onglet Souvenirs** : tous tes moments positifs regroupés par mois
-- 💾 **Export / import** de sauvegarde (`.json`) — voir [DEPLOY.md](DEPLOY.md)
-- 🔒 Données stockées en privé sur ton appareil (localStorage)
+- ☁️ **Synchronisation cloud** (Supabase) : connexion par lien magique, sauvegarde en ligne automatique et accès multi-appareils — voir [SUPABASE.md](SUPABASE.md)
+- 💾 **Export / import** de sauvegarde (`.json`) comme filet de sécurité — voir [DEPLOY.md](DEPLOY.md)
+- 🔒 Sans cloud, tout reste en privé sur ton appareil (localStorage)
 
 ## Démarrer
 

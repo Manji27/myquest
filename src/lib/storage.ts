@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { AppState } from '../types'
 import { DIFFICULTY, defaultQuests, difficultyFromXp } from '../data/defaultQuests'
+
+type Updater = AppState | ((prev: AppState) => AppState)
 
 const KEY = 'questlog.state.v1'
 
@@ -25,9 +27,14 @@ function load(): AppState {
   }
 }
 
-/** Hook d'état persistant : toute modif est sauvegardée en local automatiquement. */
+/**
+ * Hook d'état persistant. Renvoie :
+ * - `state`
+ * - `setState` : modification utilisateur (estampille `updatedAt` → déclenche la synchro)
+ * - `applyRemote` : applique un état distant tel quel (sans ré-estampiller, pour la synchro cloud)
+ */
 export function usePersistentState() {
-  const [state, setState] = useState<AppState>(load)
+  const [state, applyRemote] = useState<AppState>(load)
 
   useEffect(() => {
     try {
@@ -37,7 +44,14 @@ export function usePersistentState() {
     }
   }, [state])
 
-  return [state, setState] as const
+  const setState = useCallback((updater: Updater) => {
+    applyRemote((prev) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater
+      return { ...next, updatedAt: Date.now() }
+    })
+  }, [])
+
+  return [state, setState, applyRemote] as const
 }
 
 export function exportState(state: AppState): string {

@@ -6,5 +6,8 @@ filled.png
 editor.png
 dev-dist
 *.local
+.env
+.env.*
+!.env.example
 .DS_Store
 /*.png
