@@ -12,8 +12,9 @@ export function Header({ state, onOpenSettings }: { state: AppState; onOpenSetti
       <div className="flex items-center justify-between mb-3">
         <div>
           <div className="text-xs text-slate-400 capitalize">{prettyDate(todayKey())}</div>
-          <h1 className="text-2xl font-extrabold tracking-tight">
-            Quest<span className="text-indigo-400">Log</span>
+          <h1 className="text-lg sm:text-xl font-display">
+            <span style={{ color: '#f2c24c', textShadow: '2px 2px 0 #5a3d0a' }}>Quest</span>
+            <span style={{ color: '#a78bfa', textShadow: '2px 2px 0 #2a1a5a' }}>Log</span>
           </h1>
         </div>
         <div className="flex items-center gap-2">
