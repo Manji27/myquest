@@ -1,0 +1,9 @@
+node_modules
+dist
+.playwright-mcp
+initial.png
+filled.png
+editor.png
+dev-dist
+*.local
+.DS_Store
