@@ -19,7 +19,9 @@ function load(): AppState {
     // migration : garantit qu'une quête a toujours une difficulté + un XP cohérent
     parsed.quests = parsed.quests.map((q) => {
       const difficulty = q.difficulty ?? difficultyFromXp(q.xp ?? 20)
-      return { ...q, difficulty, xp: DIFFICULTY[difficulty].xp }
+      // quêtes existantes : « tous les jours » par défaut
+      const days = q.days ?? [0, 1, 2, 3, 4, 5, 6]
+      return { ...q, difficulty, xp: DIFFICULTY[difficulty].xp, days }
     })
     return parsed
   } catch {

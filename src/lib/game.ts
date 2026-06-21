@@ -1,5 +1,25 @@
 import type { AppState, DayLog, QuestDef } from '../types'
-import { addDays, todayKey } from './date'
+import { addDays, keyToDate, todayKey } from './date'
+
+/** Une quête est-elle prévue ce jour de la semaine ? (0=dim..6=sam ; days absent = tous les jours) */
+export function isQuestActiveOnWeekday(q: QuestDef, weekday: number): boolean {
+  return !q.days || q.days.length === 0 || q.days.includes(weekday)
+}
+
+/** Quêtes prévues pour une date donnée. */
+export function questsForDate(quests: QuestDef[], dateKey: string): QuestDef[] {
+  const weekday = keyToDate(dateKey).getDay()
+  return quests.filter((q) => isQuestActiveOnWeekday(q, weekday))
+}
+
+const DAY_LABELS = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']
+const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0] // lundi → dimanche
+
+/** Libellé court de récurrence : « Tous les jours » ou « Lun·Mer·Ven ». */
+export function formatRecurrence(days?: number[]): string {
+  if (!days || days.length === 0 || days.length >= 7) return 'Tous les jours'
+  return WEEK_ORDER.filter((d) => days.includes(d)).map((d) => DAY_LABELS[d]).join('·')
+}
 
 /** Score d'un jour = somme des XP des quêtes accomplies. */
 export function dayScore(log: DayLog | undefined, quests: QuestDef[]): number {
@@ -11,6 +31,11 @@ export function dayScore(log: DayLog | undefined, quests: QuestDef[]): number {
 /** Score maximal atteignable un jour (toutes les quêtes cochées). */
 export function maxDayScore(quests: QuestDef[]): number {
   return quests.reduce((s, q) => s + q.xp, 0)
+}
+
+/** Score maximal pour une date précise (seulement les quêtes prévues ce jour-là). */
+export function maxScoreForDate(quests: QuestDef[], dateKey: string): number {
+  return questsForDate(quests, dateKey).reduce((s, q) => s + q.xp, 0)
 }
 
 /** XP total cumulé sur tout l'historique. */

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { AppState } from '../types'
-import { dayScore, maxDayScore } from '../lib/game'
+import { dayScore, maxScoreForDate } from '../lib/game'
 import { MONTHS, WEEKDAY_LETTERS, keyToDate, todayKey, ymdKey } from '../lib/date'
 
 type Props = {
@@ -16,8 +16,6 @@ export function Calendar({ value, state, onSelect, onClose }: Props) {
   const [year, setYear] = useState(sel.getFullYear())
   const [month, setMonth] = useState(sel.getMonth()) // 0-11
   const [mode, setMode] = useState<'days' | 'years'>('days')
-
-  const max = Math.max(maxDayScore(state.quests), 1)
 
   function shiftMonth(delta: number) {
     const d = new Date(year, month + delta, 1)
@@ -100,7 +98,8 @@ export function Calendar({ value, state, onSelect, onClose }: Props) {
                 const isToday = key === today
                 const isSelected = key === value
                 const score = dayScore(state.logs[key], state.quests)
-                const ratio = Math.min(score / max, 1)
+                const dayMax = maxScoreForDate(state.quests, key)
+                const ratio = dayMax > 0 ? Math.min(score / dayMax, 1) : 0
                 return (
                   <button
                     key={key}

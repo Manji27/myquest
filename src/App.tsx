@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { usePersistentState } from './lib/storage'
-import { dayScore, levelFromXp, maxDayScore, totalXp } from './lib/game'
+import { levelFromXp, questsForDate, totalXp } from './lib/game'
 import { computeStats } from './lib/stats'
 import { ACHIEVEMENTS, unlockedIds, type Achievement } from './lib/achievements'
 import { useCloudSync } from './lib/useCloudSync'
@@ -33,8 +33,16 @@ export default function App() {
   const [selectedDate, setSelectedDate] = useState(today)
   const isToday = selectedDate === today
   const log = state.logs[selectedDate] ?? EMPTY_LOG(selectedDate)
-  const max = maxDayScore(state.quests)
-  const score = useMemo(() => dayScore(log, state.quests), [log, state.quests])
+  // seulement les quêtes prévues pour le jour sélectionné
+  const dayQuests = useMemo(() => questsForDate(state.quests, selectedDate), [state.quests, selectedDate])
+  const max = useMemo(() => dayQuests.reduce((s, q) => s + q.xp, 0), [dayQuests])
+  // score & compteur basés sur les quêtes prévues ce jour-là (cohérent avec max)
+  const doneToday = useMemo(
+    () => dayQuests.filter((q) => log.completed.includes(q.id)),
+    [dayQuests, log],
+  )
+  const score = doneToday.reduce((s, q) => s + q.xp, 0)
+  const questsDoneCount = doneToday.length
   const lvl = useMemo(() => levelFromXp(totalXp(state)), [state])
 
   // détecte les succès nouvellement débloqués → toast + confettis
@@ -79,7 +87,7 @@ export default function App() {
 
     // confettis quand on franchit la barre des 80% (l'objectif), uniquement aujourd'hui
     if (!isToday) return
-    const newScore = dayScore({ ...log, completed }, state.quests)
+    const newScore = dayQuests.filter((q) => completed.includes(q.id)).reduce((s, q) => s + q.xp, 0)
     const ratio = max > 0 ? newScore / max : 0
     if (!done && ratio >= 0.8 && !goalHit.current) {
       goalHit.current = true
@@ -139,8 +147,8 @@ export default function App() {
             <PowerGauge
               score={score}
               max={max}
-              questsDone={log.completed.length}
-              questsTotal={state.quests.length}
+              questsDone={questsDoneCount}
+              questsTotal={dayQuests.length}
               level={lvl.level}
               xpToNext={lvl.needed - lvl.current}
               isToday={isToday}
@@ -154,11 +162,11 @@ export default function App() {
                 {isToday ? 'Tes quêtes du jour' : 'Tes quêtes ce jour-là'}
               </h2>
               <span className="text-xs text-slate-500">
-                {log.completed.length}/{state.quests.length}
+                {questsDoneCount}/{dayQuests.length}
               </span>
             </div>
             <div className="grid gap-2 sm:grid-cols-2">
-              {state.quests.map((q) => (
+              {dayQuests.map((q) => (
                 <QuestCard
                   key={q.id}
                   quest={q}
@@ -166,6 +174,12 @@ export default function App() {
                   onToggle={() => toggleQuest(q.id)}
                 />
               ))}
+              {/* jour de repos : des quêtes existent mais aucune n'est prévue ce jour-là */}
+              {dayQuests.length === 0 && state.quests.length > 0 && (
+                <div className="sm:col-span-2 glass rounded-2xl p-5 text-center text-slate-400 text-sm">
+                  🌴 Aucune quête prévue {isToday ? "aujourd'hui" : 'ce jour-là'} — jour de repos !
+                </div>
+              )}
               {/* carte rapide d'ajout de quête */}
               <button
                 onClick={() => setEditorMode('new')}

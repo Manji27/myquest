@@ -44,7 +44,7 @@ export function mk(
   difficulty: Difficulty,
   color: string,
 ): QuestDef {
-  return { id, label, icon, difficulty, xp: DIFFICULTY[difficulty].xp, color }
+  return { id, label, icon, difficulty, xp: DIFFICULTY[difficulty].xp, color, days: [0, 1, 2, 3, 4, 5, 6] }
 }
 
 export const defaultQuests: QuestDef[] = [

@@ -10,19 +10,34 @@ import {
 type Props = {
   /** quête à éditer, ou undefined pour une création */
   initial?: QuestDef
-  onSave: (data: { label: string; icon: string; color: string; difficulty: Difficulty }) => void
+  onSave: (data: { label: string; icon: string; color: string; difficulty: Difficulty; days: number[] }) => void
   onCancel: () => void
   onDelete?: () => void
 }
 
-/** Formulaire complet d'une quête : nom, icône, couleur, difficulté. Partagé création/édition. */
+const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6]
+// affichage lundi → dimanche
+const DAY_BUTTONS = [
+  { v: 1, l: 'L' }, { v: 2, l: 'M' }, { v: 3, l: 'M' }, { v: 4, l: 'J' },
+  { v: 5, l: 'V' }, { v: 6, l: 'S' }, { v: 0, l: 'D' },
+]
+
+/** Formulaire complet d'une quête : nom, icône, couleur, difficulté, récurrence. */
 export function QuestForm({ initial, onSave, onCancel, onDelete }: Props) {
   const [label, setLabel] = useState(initial?.label ?? '')
   const [icon, setIcon] = useState(initial?.icon ?? QUEST_ICONS[0])
   const [color, setColor] = useState(initial?.color ?? QUEST_COLORS[0])
   const [difficulty, setDifficulty] = useState<Difficulty>(initial?.difficulty ?? 'moyen')
+  const [days, setDays] = useState<number[]>(
+    initial?.days && initial.days.length > 0 ? initial.days : ALL_DAYS,
+  )
 
-  const canSave = label.trim().length > 0
+  const everyday = days.length >= 7
+  const canSave = label.trim().length > 0 && days.length > 0
+
+  function toggleDay(v: number) {
+    setDays((d) => (d.includes(v) ? d.filter((x) => x !== v) : [...d, v]))
+  }
 
   return (
     <div className="space-y-4">
@@ -109,6 +124,40 @@ export function QuestForm({ initial, onSave, onCancel, onDelete }: Props) {
         </div>
       </div>
 
+      {/* Récurrence */}
+      <div>
+        <div className="flex items-center justify-between mb-1.5">
+          <label className="text-xs text-slate-400">Récurrence — les jours où la quête apparaît</label>
+          <button
+            onClick={() => setDays(everyday ? [] : ALL_DAYS)}
+            className={`text-xs font-semibold px-2 py-1 rounded-lg transition ${
+              everyday ? 'bg-indigo-500/40 text-white' : 'bg-white/5 text-slate-300'
+            }`}
+          >
+            Tous les jours
+          </button>
+        </div>
+        <div className="grid grid-cols-7 gap-1.5">
+          {DAY_BUTTONS.map((d, i) => {
+            const active = days.includes(d.v)
+            return (
+              <button
+                key={i}
+                onClick={() => toggleDay(d.v)}
+                className={`py-2.5 rounded-lg text-sm font-semibold transition ${
+                  active ? 'bg-gradient-to-b from-indigo-500 to-fuchsia-500 text-white' : 'bg-white/5 text-slate-400'
+                }`}
+              >
+                {d.l}
+              </button>
+            )
+          })}
+        </div>
+        {days.length === 0 && (
+          <p className="text-[11px] text-amber-400 mt-1.5">Choisis au moins un jour.</p>
+        )}
+      </div>
+
       {/* Actions */}
       <div className="flex gap-2 pt-1">
         {onDelete && (
@@ -138,6 +187,6 @@ export function QuestForm({ initial, onSave, onCancel, onDelete }: Props) {
 
   function submit() {
     if (!canSave) return
-    onSave({ label: label.trim(), icon, color, difficulty })
+    onSave({ label: label.trim(), icon, color, difficulty, days: [...days].sort((a, b) => a - b) })
   }
 }

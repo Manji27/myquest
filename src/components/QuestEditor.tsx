@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { AppState, Difficulty, QuestDef } from '../types'
 import { DIFFICULTY } from '../data/defaultQuests'
+import { formatRecurrence } from '../lib/game'
 import { QuestForm } from './QuestForm'
 
 type Props = {
@@ -26,13 +27,15 @@ export function QuestEditor({ state, setState, onClose, startInNew }: Props) {
     else setEditing(null)
   }
 
-  function saveNew(data: { label: string; icon: string; color: string; difficulty: Difficulty }) {
+  type FormData = { label: string; icon: string; color: string; difficulty: Difficulty; days: number[] }
+
+  function saveNew(data: FormData) {
     const q: QuestDef = { id: uid(), xp: DIFFICULTY[data.difficulty].xp, ...data }
     setState((s) => ({ ...s, quests: [...s.quests, q] }))
     leaveNew()
   }
 
-  function saveEdit(id: string, data: { label: string; icon: string; color: string; difficulty: Difficulty }) {
+  function saveEdit(id: string, data: FormData) {
     setState((s) => ({
       ...s,
       quests: s.quests.map((q) =>
@@ -99,10 +102,16 @@ export function QuestEditor({ state, setState, onClose, startInNew }: Props) {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="font-medium truncate">{q.label}</div>
-                      <div className="flex items-center gap-2 text-xs mt-0.5">
+                      <div className="flex items-center gap-2 text-xs mt-0.5 flex-wrap">
                         <span style={{ color: cfg.color }}>{cfg.dot} {cfg.label}</span>
                         <span className="text-slate-500">·</span>
                         <span className="font-bold" style={{ color: q.color }}>+{q.xp} XP</span>
+                        {q.days && q.days.length < 7 && (
+                          <>
+                            <span className="text-slate-500">·</span>
+                            <span className="text-indigo-300">🗓 {formatRecurrence(q.days)}</span>
+                          </>
+                        )}
                       </div>
                     </div>
                     <span className="flex items-center gap-1 text-xs text-slate-400 shrink-0">

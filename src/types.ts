@@ -7,6 +7,8 @@ export type QuestDef = {
   difficulty: Difficulty
   xp: number // dérivé de la difficulté (DIFFICULTY[difficulty].xp)
   color: string // tailwind-ish hex accent
+  /** jours de la semaine où la quête apparaît (0=dim..6=sam). Absent = tous les jours. */
+  days?: number[]
 }
 
 export type DayLog = {
