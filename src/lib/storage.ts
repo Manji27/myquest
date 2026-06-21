@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { AppState } from '../types'
-import { defaultQuests } from '../data/defaultQuests'
+import { DIFFICULTY, defaultQuests, difficultyFromXp } from '../data/defaultQuests'
 
 const KEY = 'questlog.state.v1'
 
@@ -14,6 +14,11 @@ function load(): AppState {
     if (!raw) return initialState()
     const parsed = JSON.parse(raw) as AppState
     if (!parsed.quests || !parsed.logs) return initialState()
+    // migration : garantit qu'une quête a toujours une difficulté + un XP cohérent
+    parsed.quests = parsed.quests.map((q) => {
+      const difficulty = q.difficulty ?? difficultyFromXp(q.xp ?? 20)
+      return { ...q, difficulty, xp: DIFFICULTY[difficulty].xp }
+    })
     return parsed
   } catch {
     return initialState()

@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import { usePersistentState } from './lib/storage'
-import { dayScore, maxDayScore } from './lib/game'
+import { dayScore, levelFromXp, maxDayScore, totalXp } from './lib/game'
 import { todayKey } from './lib/date'
 import type { DayLog } from './types'
 import { Header } from './components/Header'
@@ -23,6 +23,7 @@ export default function App() {
   const log = state.logs[today] ?? EMPTY_LOG(today)
   const max = maxDayScore(state.quests)
   const score = useMemo(() => dayScore(log, state.quests), [log, state.quests])
+  const lvl = useMemo(() => levelFromXp(totalXp(state)), [state])
 
   function patchLog(patch: Partial<DayLog>) {
     setState((s) => {
@@ -63,7 +64,14 @@ export default function App() {
         <div className="lg:col-span-7 space-y-4">
           {/* Puissance du jour */}
           <section className="glass rounded-3xl p-5 sm:p-6 flex justify-center sm:justify-start">
-            <PowerGauge score={score} max={max} />
+            <PowerGauge
+              score={score}
+              max={max}
+              questsDone={log.completed.length}
+              questsTotal={state.quests.length}
+              level={lvl.level}
+              xpToNext={lvl.needed - lvl.current}
+            />
           </section>
 
           {/* Quêtes du jour */}

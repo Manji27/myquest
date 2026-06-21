@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { QuestDef } from '../types'
+import { DIFFICULTY } from '../data/defaultQuests'
 
 type Props = {
   quest: QuestDef
@@ -40,8 +41,11 @@ export function QuestCard({ quest, done, onToggle }: Props) {
         <div className={`font-semibold truncate ${done ? 'text-white' : 'text-slate-200'}`}>
           {quest.label}
         </div>
-        <div className="text-xs font-medium" style={{ color: quest.color }}>
-          +{quest.xp} XP
+        <div className="text-xs font-medium flex items-center gap-1.5">
+          <span style={{ color: quest.color }}>+{quest.xp} XP</span>
+          <span className="text-slate-500">
+            {DIFFICULTY[quest.difficulty].dot} {DIFFICULTY[quest.difficulty].label}
+          </span>
         </div>
       </div>
 

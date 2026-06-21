@@ -1,8 +1,11 @@
+export type Difficulty = 'facile' | 'moyen' | 'difficile'
+
 export type QuestDef = {
   id: string
   label: string
   icon: string // emoji
-  xp: number
+  difficulty: Difficulty
+  xp: number // dérivé de la difficulté (DIFFICULTY[difficulty].xp)
   color: string // tailwind-ish hex accent
 }
 
