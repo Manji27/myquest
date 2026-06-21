@@ -63,7 +63,7 @@ export default function App() {
       <Header state={state} onOpenSettings={() => setEditorMode('list')} />
 
       {/* onglets */}
-      <div className="mt-4 glass rounded-2xl p-1 flex gap-1 max-w-xs mx-auto">
+      <div className="mt-4 glass rounded-2xl p-1 flex gap-1 max-w-md mx-auto">
         {([
           ['jour', '📅 Journal'],
           ['souvenirs', '📖 Souvenirs'],
@@ -90,7 +90,7 @@ export default function App() {
         />
       ) : (
        <>
-      <div className="mt-4">
+      <div className="mt-3 max-w-md mx-auto">
         <DayNavigator value={selectedDate} today={today} state={state} onChange={setSelectedDate} />
       </div>
 
@@ -98,7 +98,7 @@ export default function App() {
         {/* —— Colonne gauche : puissance + quêtes —— */}
         <div className="lg:col-span-7 space-y-4">
           {/* Puissance du jour */}
-          <section className="glass rounded-3xl p-5 sm:p-6 flex justify-center sm:justify-start">
+          <section className="glass rounded-3xl p-5 sm:p-6 flex justify-center">
             <PowerGauge
               score={score}
               max={max}

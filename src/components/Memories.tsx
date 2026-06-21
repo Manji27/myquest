@@ -32,7 +32,7 @@ export function Memories({ state, onOpenDay }: Props) {
 
   if (total === 0) {
     return (
-      <div className="glass rounded-3xl p-8 text-center text-slate-400 mt-4">
+      <div className="glass rounded-3xl p-8 text-center text-slate-400 mt-4 max-w-md mx-auto">
         <div className="text-4xl mb-3">📖</div>
         <p className="font-semibold text-slate-200 mb-1">Aucun souvenir pour l'instant</p>
         <p className="text-sm">
@@ -43,25 +43,26 @@ export function Memories({ state, onOpenDay }: Props) {
   }
 
   return (
-    <div className="mt-4 space-y-6 max-w-2xl mx-auto">
-      <p className="text-center text-sm text-slate-400">
+    <div className="mt-4 space-y-6">
+      <p className="text-sm text-slate-400 px-1">
         {total} moment{total > 1 ? 's' : ''} positif{total > 1 ? 's' : ''} enregistré{total > 1 ? 's' : ''} ✨
       </p>
 
       {groups.map((g) => (
         <section key={g.ym}>
-          <h3 className="text-sm font-bold text-indigo-300 capitalize mb-2 px-1 sticky top-0">
+          <h3 className="text-sm font-bold text-indigo-300 capitalize mb-2 px-1">
             {g.label}
             <span className="text-slate-500 font-normal"> · {g.entries.length}</span>
           </h3>
-          <div className="space-y-2">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 items-start">
             {g.entries.map((e) => (
               <button
                 key={e.key}
                 onClick={() => onOpenDay(e.key)}
-                className="w-full glass rounded-2xl p-4 text-left active:scale-[0.99] transition hover:bg-white/8"
+                className="glass rounded-2xl p-4 text-left active:scale-[0.99] transition hover:bg-white/8"
               >
-                <div className="mb-1.5">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-sm">✨</span>
                   <span className="text-xs font-medium text-slate-400 capitalize">
                     {prettyDate(e.key)}
                   </span>
