@@ -7,3 +7,4 @@ editor.png
 dev-dist
 *.local
 .DS_Store
+/*.png
