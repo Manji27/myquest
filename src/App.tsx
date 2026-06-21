@@ -157,9 +157,7 @@ export default function App() {
           <PositiveEvent
             key={selectedDate}
             value={log.positiveEvent}
-            mood={log.mood}
             onChange={(text) => patchLog({ positiveEvent: text })}
-            onMood={(m) => patchLog({ mood: m })}
           />
         </div>
       </div>

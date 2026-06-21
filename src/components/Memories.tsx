@@ -1,14 +1,13 @@
 import { useMemo } from 'react'
 import type { AppState } from '../types'
 import { MONTHS, keyToDate, prettyDate } from '../lib/date'
-import { moodEmoji } from '../lib/moods'
 
 type Props = {
   state: AppState
   onOpenDay: (key: string) => void
 }
 
-type MonthGroup = { label: string; ym: string; entries: { key: string; text: string; mood?: number }[] }
+type MonthGroup = { label: string; ym: string; entries: { key: string; text: string }[] }
 
 /** Récap de tous les moments positifs, regroupés par mois (du plus récent au plus ancien). */
 export function Memories({ state, onOpenDay }: Props) {
@@ -24,7 +23,7 @@ export function Memories({ state, onOpenDay }: Props) {
       if (!map.has(ym)) {
         map.set(ym, { ym, label: `${MONTHS[d.getMonth()]} ${d.getFullYear()}`, entries: [] })
       }
-      map.get(ym)!.entries.push({ key: l.date, text: l.positiveEvent, mood: l.mood })
+      map.get(ym)!.entries.push({ key: l.date, text: l.positiveEvent })
     }
     return [...map.values()]
   }, [state.logs])
@@ -62,11 +61,10 @@ export function Memories({ state, onOpenDay }: Props) {
                 onClick={() => onOpenDay(e.key)}
                 className="w-full glass rounded-2xl p-4 text-left active:scale-[0.99] transition hover:bg-white/8"
               >
-                <div className="flex items-center justify-between mb-1.5">
+                <div className="mb-1.5">
                   <span className="text-xs font-medium text-slate-400 capitalize">
                     {prettyDate(e.key)}
                   </span>
-                  {moodEmoji(e.mood) && <span className="text-lg">{moodEmoji(e.mood)}</span>}
                 </div>
                 <p className="text-sm text-slate-100 whitespace-pre-wrap break-words">{e.text}</p>
               </button>
