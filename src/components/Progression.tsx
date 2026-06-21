@@ -191,10 +191,27 @@ function ReminderCard({
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState<string | null>(null)
   const time = state.settings?.reminderTime ?? '20:00'
+  const [draftTime, setDraftTime] = useState(time)
+  const [timeSaved, setTimeSaved] = useState(false)
+  const timeDirty = draftTime !== time
 
   useEffect(() => {
     isPushEnabled().then(setDeviceOn)
   }, [])
+
+  // resynchronise le brouillon si l'heure change depuis le cloud
+  useEffect(() => {
+    setDraftTime(time)
+  }, [time])
+
+  function saveTime() {
+    setState((s) => ({
+      ...s,
+      settings: { ...s.settings, reminderTime: draftTime, tz: localTimezone() },
+    }))
+    setTimeSaved(true)
+    setTimeout(() => setTimeSaved(false), 2500)
+  }
 
   if (!pushSupported) {
     return (
@@ -250,7 +267,7 @@ function ReminderCard({
         <div className="min-w-0">
           <h3 className="text-sm font-bold text-indigo-300 mb-0.5">🔔 Rappel quotidien</h3>
           <p className="text-xs text-slate-400">
-            {deviceOn ? 'Tu recevras un rappel si ta journée n\'est pas validée.' : 'Active une notification pour ne pas casser ta série.'}
+            {deviceOn ? 'Rappel envoyé si tes quêtes du jour ne sont pas toutes accomplies.' : 'Active une notification pour ne pas casser ta série.'}
           </p>
         </div>
         <button
@@ -264,19 +281,40 @@ function ReminderCard({
       </div>
 
       {deviceOn && (
-        <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/8">
-          <span className="text-sm text-slate-300">Heure du rappel</span>
-          <input
-            type="time"
-            value={time}
-            onChange={(e) =>
-              setState((s) => ({
-                ...s,
-                settings: { ...s.settings, reminderTime: e.target.value, tz: localTimezone() },
-              }))
-            }
-            className="rounded-lg bg-white/5 px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-indigo-400/40"
-          />
+        <div className="mt-3 pt-3 border-t border-white/8">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-sm text-slate-300">Heure du rappel</span>
+            <div className="flex items-center gap-2">
+              <input
+                type="time"
+                value={draftTime}
+                onChange={(e) => setDraftTime(e.target.value)}
+                className="rounded-lg bg-white/5 px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-indigo-400/40"
+              />
+              <button
+                onClick={saveTime}
+                disabled={!timeDirty}
+                className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition active:scale-[0.97] ${
+                  timeDirty
+                    ? 'bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white'
+                    : 'bg-white/5 text-slate-500'
+                }`}
+              >
+                Valider
+              </button>
+            </div>
+          </div>
+          {timeSaved && !timeDirty && (
+            <p className="text-xs text-emerald-400 mt-2 flex items-center gap-1 animate-pop">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              Rappel réglé sur {time} ✓
+            </p>
+          )}
+          {timeDirty && (
+            <p className="text-xs text-amber-400 mt-2">Heure modifiée — clique sur « Valider » pour enregistrer.</p>
+          )}
         </div>
       )}
 

@@ -52,7 +52,16 @@ Deno.serve(async () => {
         day: '2-digit',
       }).format(now)
       const log = st?.logs?.[todayKey]
-      if (log && Array.isArray(log.completed) && log.completed.length > 0) continue // déjà actif
+
+      // quêtes PRÉVUES ce jour-là (récurrence) ; rappel seulement si pas 100% accomplies
+      const [yy, mm, dd] = todayKey.split('-').map(Number)
+      const weekday = new Date(Date.UTC(yy, mm - 1, dd)).getUTCDay() // 0=dim..6=sam
+      const scheduled = (st?.quests ?? []).filter(
+        (q: any) => !q.days || q.days.length === 0 || q.days.includes(weekday),
+      )
+      const done = new Set<string>(log?.completed ?? [])
+      const allDone = scheduled.length > 0 && scheduled.every((q: any) => done.has(q.id))
+      if (scheduled.length === 0 || allDone) continue // jour de repos ou 100% fait → pas de rappel
 
       await webpush.sendNotification(
         { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
