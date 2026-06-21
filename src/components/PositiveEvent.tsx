@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { PixelIcon } from './PixelIcon'
 
 type Props = {
   value: string
@@ -28,7 +29,7 @@ export function PositiveEvent({ value, onChange }: Props) {
     <div className="glass rounded-3xl p-4 flex flex-col">
       <div className="flex items-center justify-between mb-2 gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          <span className="text-lg">✨</span>
+          <PixelIcon name="scroll" size={24} alt="" />
           <h2 className="text-sm font-semibold text-slate-200 truncate">
             Le moment positif du jour
           </h2>

@@ -6,6 +6,7 @@ import {
   QUEST_COLORS,
   QUEST_ICONS,
 } from '../data/defaultQuests'
+import { QuestGlyph } from './PixelIcon'
 
 type Props = {
   /** quête à éditer, ou undefined pour une création */
@@ -43,10 +44,10 @@ export function QuestForm({ initial, onSave, onCancel, onDelete }: Props) {
     <div className="space-y-4">
       <div className="flex items-center gap-3">
         <div
-          className="grid place-items-center w-14 h-14 rounded-2xl text-2xl shrink-0"
-          style={{ background: color + '26' }}
+          className="grid place-items-center w-14 h-14 text-2xl shrink-0"
+          style={{ background: color + '26', boxShadow: `inset 0 0 0 2px ${color}55` }}
         >
-          {icon}
+          <QuestGlyph icon={icon} size={40} />
         </div>
         <input
           autoFocus
@@ -95,11 +96,11 @@ export function QuestForm({ initial, onSave, onCancel, onDelete }: Props) {
             <button
               key={ic}
               onClick={() => setIcon(ic)}
-              className={`shrink-0 w-10 h-10 rounded-lg text-xl grid place-items-center transition ${
+              className={`shrink-0 w-10 h-10 text-xl grid place-items-center transition ${
                 icon === ic ? 'bg-indigo-500/40 scale-110' : 'bg-white/5'
               }`}
             >
-              {ic}
+              <QuestGlyph icon={ic} size={26} />
             </button>
           ))}
         </div>

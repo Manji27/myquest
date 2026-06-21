@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { AppState } from '../types'
 import { addDays, prettyDate } from '../lib/date'
 import { Calendar } from './Calendar'
+import { PixelIcon } from './PixelIcon'
 
 type Props = {
   value: string // jour sélectionné (YYYY-MM-DD)
@@ -24,13 +25,13 @@ export function DayNavigator({ value, today, state, onChange }: Props) {
 
   return (
     <>
-      <div className="glass rounded-2xl flex items-center justify-between gap-2 p-1.5">
+      <div className="glass flex items-center justify-between gap-2 p-1.5">
         <button
           onClick={() => onChange(addDays(value, -1))}
           aria-label="Jour précédent"
-          className="w-11 h-11 grid place-items-center rounded-xl bg-white/5 text-lg active:scale-90 transition"
+          className="w-11 h-11 grid place-items-center bg-white/5 active:scale-90 transition"
         >
-          ‹
+          <PixelIcon name="arrow" size={26} className="-scale-x-100" alt="précédent" />
         </button>
 
         <button
@@ -38,7 +39,7 @@ export function DayNavigator({ value, today, state, onChange }: Props) {
           aria-label="Ouvrir le calendrier"
           className="flex-1 flex items-center justify-center gap-2.5 active:scale-[0.98] transition"
         >
-          <span className="text-xl">📅</span>
+          <PixelIcon name="calendar" size={24} alt="" />
           <div className="text-left">
             <div className="text-[11px] uppercase tracking-wide text-indigo-300">
               {relativeLabel(value, today)}
@@ -51,9 +52,9 @@ export function DayNavigator({ value, today, state, onChange }: Props) {
           onClick={() => !isToday && onChange(addDays(value, 1))}
           disabled={isToday}
           aria-label="Jour suivant"
-          className="w-11 h-11 grid place-items-center rounded-xl bg-white/5 text-lg active:scale-90 transition disabled:opacity-25 disabled:active:scale-100"
+          className="w-11 h-11 grid place-items-center bg-white/5 active:scale-90 transition disabled:opacity-25 disabled:active:scale-100"
         >
-          ›
+          <PixelIcon name="arrow" size={26} alt="suivant" />
         </button>
       </div>
 

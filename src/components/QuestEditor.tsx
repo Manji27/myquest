@@ -3,6 +3,7 @@ import type { AppState, Difficulty, QuestDef } from '../types'
 import { DIFFICULTY } from '../data/defaultQuests'
 import { formatRecurrence } from '../lib/game'
 import { QuestForm } from './QuestForm'
+import { QuestGlyph } from './PixelIcon'
 
 type Props = {
   state: AppState
@@ -95,10 +96,10 @@ export function QuestEditor({ state, setState, onClose, startInNew }: Props) {
                     className="w-full rounded-2xl p-3 flex items-center gap-3 text-left bg-white/5 hover:bg-white/10 active:scale-[0.99] transition"
                   >
                     <div
-                      className="grid place-items-center w-11 h-11 rounded-xl text-xl shrink-0"
-                      style={{ background: q.color + '26' }}
+                      className="grid place-items-center w-11 h-11 text-xl shrink-0"
+                      style={{ background: q.color + '26', boxShadow: `inset 0 0 0 2px ${q.color}55` }}
                     >
-                      {q.icon}
+                      <QuestGlyph icon={q.icon} size={30} />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="font-medium truncate">{q.label}</div>

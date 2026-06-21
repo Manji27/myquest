@@ -1,6 +1,7 @@
 import type { AppState } from '../types'
 import { currentStreakWithFreeze, levelFromXp, totalXp } from '../lib/game'
 import { prettyDate, todayKey } from '../lib/date'
+import { PixelIcon } from './PixelIcon'
 
 export function Header({ state, onOpenSettings }: { state: AppState; onOpenSettings: () => void }) {
   const xp = totalXp(state)
@@ -18,8 +19,8 @@ export function Header({ state, onOpenSettings }: { state: AppState; onOpenSetti
           </h1>
         </div>
         <div className="flex items-center gap-2">
-          <div className="glass flex items-center gap-1.5 rounded-full px-3 py-1.5" title={usedFreeze ? 'Joker de série utilisé (1 jour manqué gelé)' : 'Série en cours'}>
-            <span className={streak > 0 ? 'animate-flame text-lg' : 'text-lg opacity-40'}>🔥</span>
+          <div className="glass flex items-center gap-1.5 px-3 py-1.5" title={usedFreeze ? 'Joker de série utilisé (1 jour manqué gelé)' : 'Série en cours'}>
+            <PixelIcon name="flame" size={22} className={streak > 0 ? 'animate-flame' : 'opacity-40'} alt="série" />
             <span className="font-bold">{streak}</span>
             <span className="text-xs text-slate-400">j</span>
             {usedFreeze && <span className="text-sm" title="Joker utilisé">❄️</span>}
@@ -27,9 +28,9 @@ export function Header({ state, onOpenSettings }: { state: AppState; onOpenSetti
           <button
             onClick={onOpenSettings}
             aria-label="Réglages"
-            className="glass rounded-full w-10 h-10 grid place-items-center text-lg active:scale-90 transition"
+            className="glass w-10 h-10 grid place-items-center active:scale-90 transition"
           >
-            ⚙️
+            <PixelIcon name="gear" size={24} alt="réglages" />
           </button>
         </div>
       </div>

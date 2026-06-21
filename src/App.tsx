@@ -18,6 +18,7 @@ import { PositiveEvent } from './components/PositiveEvent'
 import { QuestEditor } from './components/QuestEditor'
 import { Confetti } from './components/Confetti'
 import { AchievementToast } from './components/AchievementToast'
+import { PixelIcon } from './components/PixelIcon'
 
 const EMPTY_LOG = (date: string): DayLog => ({ date, completed: [], positiveEvent: '' })
 
@@ -106,20 +107,21 @@ export default function App() {
       <Header state={state} onOpenSettings={() => setEditorMode('list')} />
 
       {/* onglets */}
-      <div className="mt-4 glass rounded-2xl p-1 flex gap-1 max-w-lg mx-auto">
+      <div className="mt-4 glass p-1 flex gap-1 max-w-lg mx-auto">
         {([
-          ['jour', '📅 Journal'],
-          ['progression', '🏆 Progression'],
-          ['souvenirs', '📖 Souvenirs'],
-        ] as const).map(([key, label]) => (
+          ['jour', 'Journal', 'calendar'],
+          ['progression', 'Progression', 'trophy'],
+          ['souvenirs', 'Souvenirs', 'book'],
+        ] as const).map(([key, label, icon]) => (
           <button
             key={key}
             onClick={() => setView(key)}
-            className={`flex-1 rounded-xl py-2 text-sm font-semibold transition ${
+            className={`flex-1 py-2 text-sm font-semibold transition flex items-center justify-center gap-1.5 ${
               view === key ? 'bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white' : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            {label}
+            <PixelIcon name={icon} size={20} alt="" />
+            <span>{label}</span>
           </button>
         ))}
       </div>

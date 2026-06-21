@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { QuestDef } from '../types'
 import { DIFFICULTY } from '../data/defaultQuests'
+import { QuestGlyph } from './PixelIcon'
 
 type Props = {
   quest: QuestDef
@@ -31,10 +32,10 @@ export function QuestCard({ quest, done, streak = 0, onToggle }: Props) {
     >
       {/* icône */}
       <div
-        className={`grid place-items-center w-12 h-12 rounded-xl text-2xl shrink-0 transition ${done ? 'animate-pop' : ''}`}
-        style={{ background: quest.color + '26' }}
+        className={`grid place-items-center w-12 h-12 text-2xl shrink-0 transition ${done ? 'animate-pop' : ''}`}
+        style={{ background: quest.color + '26', boxShadow: `inset 0 0 0 2px ${quest.color}55` }}
       >
-        {quest.icon}
+        <QuestGlyph icon={quest.icon} size={34} />
       </div>
 
       {/* libellé */}
