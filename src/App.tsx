@@ -4,6 +4,7 @@ import { dayScore, levelFromXp, maxDayScore, totalXp } from './lib/game'
 import { todayKey } from './lib/date'
 import type { DayLog } from './types'
 import { Header } from './components/Header'
+import { DayNavigator } from './components/DayNavigator'
 import { PowerGauge } from './components/PowerGauge'
 import { QuestCard } from './components/QuestCard'
 import { ScoreCurve } from './components/ScoreCurve'
@@ -20,15 +21,17 @@ export default function App() {
   const goalHit = useRef(false)
 
   const today = todayKey()
-  const log = state.logs[today] ?? EMPTY_LOG(today)
+  const [selectedDate, setSelectedDate] = useState(today)
+  const isToday = selectedDate === today
+  const log = state.logs[selectedDate] ?? EMPTY_LOG(selectedDate)
   const max = maxDayScore(state.quests)
   const score = useMemo(() => dayScore(log, state.quests), [log, state.quests])
   const lvl = useMemo(() => levelFromXp(totalXp(state)), [state])
 
   function patchLog(patch: Partial<DayLog>) {
     setState((s) => {
-      const prev = s.logs[today] ?? EMPTY_LOG(today)
-      return { ...s, logs: { ...s.logs, [today]: { ...prev, ...patch } } }
+      const prev = s.logs[selectedDate] ?? EMPTY_LOG(selectedDate)
+      return { ...s, logs: { ...s.logs, [selectedDate]: { ...prev, ...patch } } }
     })
   }
 
@@ -39,17 +42,15 @@ export default function App() {
       : [...log.completed, id]
     patchLog({ completed })
 
-    // confettis quand on franchit la barre des 80% (l'objectif)
-    if (!done) {
-      const newScore = dayScore({ ...log, completed }, state.quests)
-      const ratio = max > 0 ? newScore / max : 0
-      if (ratio >= 0.8 && !goalHit.current) {
-        goalHit.current = true
-        setConfetti((c) => c + 1)
-      }
-    } else {
-      const newScore = dayScore({ ...log, completed }, state.quests)
-      if (max > 0 && newScore / max < 0.8) goalHit.current = false
+    // confettis quand on franchit la barre des 80% (l'objectif), uniquement aujourd'hui
+    if (!isToday) return
+    const newScore = dayScore({ ...log, completed }, state.quests)
+    const ratio = max > 0 ? newScore / max : 0
+    if (!done && ratio >= 0.8 && !goalHit.current) {
+      goalHit.current = true
+      setConfetti((c) => c + 1)
+    } else if (done && ratio < 0.8) {
+      goalHit.current = false
     }
   }
 
@@ -58,6 +59,10 @@ export default function App() {
       <Confetti trigger={confetti} />
 
       <Header state={state} onOpenSettings={() => setSettingsOpen(true)} />
+
+      <div className="mt-4">
+        <DayNavigator value={selectedDate} today={today} onChange={setSelectedDate} />
+      </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-12 lg:items-start">
         {/* —— Colonne gauche : puissance + quêtes —— */}
@@ -71,13 +76,16 @@ export default function App() {
               questsTotal={state.quests.length}
               level={lvl.level}
               xpToNext={lvl.needed - lvl.current}
+              isToday={isToday}
             />
           </section>
 
           {/* Quêtes du jour */}
           <section>
             <div className="flex items-center justify-between mb-2 px-1">
-              <h2 className="text-sm font-semibold text-slate-300">Tes quêtes du jour</h2>
+              <h2 className="text-sm font-semibold text-slate-300">
+                {isToday ? 'Tes quêtes du jour' : 'Tes quêtes ce jour-là'}
+              </h2>
               <span className="text-xs text-slate-500">
                 {log.completed.length}/{state.quests.length}
               </span>
@@ -105,9 +113,15 @@ export default function App() {
 
         {/* —— Colonne droite : courbe + journal —— */}
         <div className="lg:col-span-5 space-y-4">
-          <ScoreCurve state={state} days={14} />
+          <ScoreCurve
+            state={state}
+            days={14}
+            selected={selectedDate}
+            onSelectDay={setSelectedDate}
+          />
 
           <PositiveEvent
+            key={selectedDate}
             value={log.positiveEvent}
             mood={log.mood}
             onChange={(text) => patchLog({ positiveEvent: text })}

@@ -7,10 +7,11 @@ type Props = {
   questsTotal: number
   level: number
   xpToNext: number
+  isToday: boolean
 }
 
 /** Jauge circulaire "Puissance du jour" + mini-récap motivant. */
-export function PowerGauge({ score, max, questsDone, questsTotal, level, xpToNext }: Props) {
+export function PowerGauge({ score, max, questsDone, questsTotal, level, xpToNext, isToday }: Props) {
   const ratio = max > 0 ? Math.min(score / max, 1) : 0
   const vibe = dayVibe(ratio)
   const size = 140
@@ -56,21 +57,28 @@ export function PowerGauge({ score, max, questsDone, questsTotal, level, xpToNex
           <span className="text-xl font-bold leading-tight">{vibe.label}</span>
         </div>
         <div className="text-sm text-slate-400 mt-1">
-          {Math.round(ratio * 100)}% de ta puissance du jour
+          {Math.round(ratio * 100)}% {isToday ? 'de ta puissance du jour' : 'de cette journée'}
         </div>
 
         {/* mini-récap */}
         <div className="mt-3 space-y-1.5 text-sm">
-          <RecapRow
-            icon="🎯"
-            text={
-              questsLeft === 0
-                ? questsTotal > 0
-                  ? 'Toutes les quêtes accomplies !'
-                  : 'Ajoute des quêtes pour démarrer'
-                : `${questsLeft} quête${questsLeft > 1 ? 's' : ''} restante${questsLeft > 1 ? 's' : ''} aujourd'hui`
-            }
-          />
+          {isToday ? (
+            <RecapRow
+              icon="🎯"
+              text={
+                questsLeft === 0
+                  ? questsTotal > 0
+                    ? 'Toutes les quêtes accomplies !'
+                    : 'Ajoute des quêtes pour démarrer'
+                  : `${questsLeft} quête${questsLeft > 1 ? 's' : ''} restante${questsLeft > 1 ? 's' : ''} aujourd'hui`
+              }
+            />
+          ) : (
+            <RecapRow
+              icon="✅"
+              text={`${questsDone}/${questsTotal} quêtes accomplies ce jour-là`}
+            />
+          )}
           <RecapRow
             icon="⚡"
             text={`${xpToNext} XP avant le niveau ${level + 1}`}

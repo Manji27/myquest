@@ -6,6 +6,8 @@ import { lastNDays, weekdayShort, todayKey } from '../lib/date'
 type Props = {
   state: AppState
   days?: number
+  selected?: string
+  onSelectDay?: (key: string) => void
 }
 
 /** Convertit une liste de points en chemin SVG lissé (Catmull-Rom → Bézier). */
@@ -26,7 +28,7 @@ function smoothPath(points: { x: number; y: number }[]): string {
   return d
 }
 
-export function ScoreCurve({ state, days = 14 }: Props) {
+export function ScoreCurve({ state, days = 14, selected, onSelectDay }: Props) {
   const keys = useMemo(() => lastNDays(days), [days])
   const max = Math.max(maxDayScore(state.quests), 1)
   const scores = keys.map((k) => dayScore(state.logs[k], state.quests))
@@ -96,16 +98,26 @@ export function ScoreCurve({ state, days = 14 }: Props) {
         {/* points */}
         {points.map((p, i) => {
           const isToday = keys[i] === today
+          const isSelected = keys[i] === selected
           const v = scores[i]
           return (
-            <g key={keys[i]}>
+            <g
+              key={keys[i]}
+              onClick={() => onSelectDay?.(keys[i])}
+              style={{ cursor: onSelectDay ? 'pointer' : 'default' }}
+            >
+              {/* cible de clic élargie (invisible) */}
+              <rect x={p.x - 9} y={padTop - 6} width={18} height={innerH + 12} fill="transparent" />
+              {isSelected && (
+                <circle cx={p.x} cy={p.y} r={8} fill="none" stroke="#f472b6" strokeWidth="1.5" opacity="0.7" />
+              )}
               <circle
-                cx={p.x} cy={p.y} r={isToday ? 4.5 : 2.5}
-                fill={isToday ? '#fff' : '#a78bfa'}
-                stroke={isToday ? '#f472b6' : 'none'}
+                cx={p.x} cy={p.y} r={isSelected ? 4.5 : isToday ? 3.5 : 2.5}
+                fill={isSelected ? '#fff' : isToday ? '#f9a8d4' : '#a78bfa'}
+                stroke={isSelected ? '#f472b6' : 'none'}
                 strokeWidth="2"
               />
-              {isToday && v > 0 && (
+              {(isSelected || isToday) && v > 0 && (
                 <text x={p.x} y={p.y - 10} textAnchor="middle" fontSize="9" fontWeight="700" fill="#fff">
                   {v}
                 </text>

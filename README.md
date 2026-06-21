@@ -13,7 +13,8 @@ Fonctionne sur **desktop et mobile** (PWA installable), **100% en local** — au
 - 📈 **Courbe de productivité** sur 14 jours avec ligne d'objectif (80%), record et moyenne
 - 🎉 **Confettis** quand tu franchis ton objectif du jour
 - 🏆 **Niveaux + barre d'XP** et 🔥 **série de jours consécutifs** (streak)
-- ✨ **Journal du moment positif** + humeur du jour
+- ✨ **Journal du moment positif** + humeur du jour, avec **sauvegarde auto** (indicateur « Enregistré ✓ »)
+- 📅 **Navigation entre les jours** (flèches ou clic sur un point de la courbe) pour revoir/compléter l'historique
 - 🔒 Données stockées en privé sur ton appareil (localStorage)
 
 ## Démarrer
