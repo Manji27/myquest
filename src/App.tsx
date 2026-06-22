@@ -5,7 +5,7 @@ import { computeStats } from './lib/stats'
 import { ACHIEVEMENTS, unlockedIds, type Achievement } from './lib/achievements'
 import { useCloudSync } from './lib/useCloudSync'
 import { todayKey } from './lib/date'
-import type { DayLog } from './types'
+import type { DayLog, QuestDef } from './types'
 import { Header } from './components/Header'
 import { Memories } from './components/Memories'
 import { Progression } from './components/Progression'
@@ -29,6 +29,7 @@ export default function App() {
   const [view, setView] = useState<'jour' | 'progression' | 'souvenirs'>('jour')
   const [confetti, setConfetti] = useState(0)
   const [toast, setToast] = useState<Achievement | null>(null)
+  const [pendingDelete, setPendingDelete] = useState<QuestDef | null>(null)
   const goalHit = useRef(false)
 
   const today = todayKey()
@@ -72,6 +73,11 @@ export default function App() {
     const t = setTimeout(() => setToast(null), 5000)
     return () => clearTimeout(t)
   }, [toast])
+
+  function deleteQuest(id: string) {
+    setState((s) => ({ ...s, quests: s.quests.filter((q) => q.id !== id) }))
+    setPendingDelete(null)
+  }
 
   function patchLog(patch: Partial<DayLog>) {
     setState((s) => {
@@ -184,6 +190,7 @@ export default function App() {
                   done={log.completed.includes(q.id)}
                   streak={questStreak(state, q)}
                   onToggle={() => toggleQuest(q.id)}
+                  onLongPress={() => setPendingDelete(q)}
                 />
               ))}
               {/* jour de repos : des quêtes existent mais aucune n'est prévue ce jour-là */}
@@ -240,6 +247,49 @@ export default function App() {
           startInNew={editorMode === 'new'}
           onClose={() => setEditorMode(null)}
         />
+      )}
+
+      {/* confirmation de suppression (déclenchée par appui long sur une quête) */}
+      {pendingDelete && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-[#0b1020]/80 backdrop-blur-sm"
+          onClick={() => setPendingDelete(null)}
+        >
+          <div
+            className="glass rounded-3xl w-full max-w-sm p-5 animate-pop"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <span
+                className="grid place-items-center w-12 h-12 rounded-xl text-2xl shrink-0"
+                style={{ background: pendingDelete.color + '26' }}
+              >
+                {pendingDelete.icon}
+              </span>
+              <div className="min-w-0">
+                <h2 className="font-extrabold truncate">Supprimer la quête ?</h2>
+                <p className="text-sm text-slate-400 truncate">{pendingDelete.label}</p>
+              </div>
+            </div>
+            <p className="text-xs text-slate-500 mb-4">
+              La quête sera retirée de tes journées à venir. Ton historique passé reste intact.
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setPendingDelete(null)}
+                className="flex-1 rounded-xl bg-white/5 hover:bg-white/10 py-3 font-semibold active:scale-[0.98] transition"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => deleteQuest(pendingDelete.id)}
+                className="flex-1 rounded-xl bg-red-500/20 text-red-300 hover:bg-red-500/30 py-3 font-semibold active:scale-[0.98] transition"
+              >
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

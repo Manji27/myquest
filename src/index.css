@@ -195,6 +195,13 @@ select {
   to { stroke-dashoffset: 0; }
 }
 
+/* feedback d'appui long : la carte « se charge » progressivement */
+@keyframes pressHold {
+  0% { transform: scale(1); }
+  100% { transform: scale(0.94); filter: brightness(1.25); }
+}
+.animate-pressHold { animation: pressHold 0.5s ease-out forwards; }
+
 /* scrollbar pixel */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: rgba(10,8,32,0.5); }

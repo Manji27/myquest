@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type { QuestDef } from '../types'
 import { DIFFICULTY } from '../data/defaultQuests'
 import { QuestGlyph } from './PixelIcon'
@@ -8,12 +8,52 @@ type Props = {
   done: boolean
   streak?: number
   onToggle: () => void
+  /** appui long (mobile) → proposer la suppression */
+  onLongPress?: () => void
 }
 
-export function QuestCard({ quest, done, streak = 0, onToggle }: Props) {
+const LONG_PRESS_MS = 500
+
+export function QuestCard({ quest, done, streak = 0, onToggle, onLongPress }: Props) {
   const [floating, setFloating] = useState(false)
+  const [pressing, setPressing] = useState(false)
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const longFired = useRef(false)
+  const startPos = useRef<{ x: number; y: number } | null>(null)
+
+  function clearTimer() {
+    clearTimeout(timer.current)
+    setPressing(false)
+    startPos.current = null
+  }
+
+  function onPointerDown(e: React.PointerEvent) {
+    if (!onLongPress) return
+    longFired.current = false
+    startPos.current = { x: e.clientX, y: e.clientY }
+    setPressing(true)
+    timer.current = setTimeout(() => {
+      longFired.current = true
+      setPressing(false)
+      navigator.vibrate?.(40)
+      onLongPress()
+    }, LONG_PRESS_MS)
+  }
+
+  function onPointerMove(e: React.PointerEvent) {
+    // annule l'appui long si on scrolle/bouge le doigt
+    if (!startPos.current) return
+    const dx = Math.abs(e.clientX - startPos.current.x)
+    const dy = Math.abs(e.clientY - startPos.current.y)
+    if (dx > 10 || dy > 10) clearTimer()
+  }
 
   function handle() {
+    // un appui long vient de déclencher → on n'exécute pas le toggle
+    if (longFired.current) {
+      longFired.current = false
+      return
+    }
     if (!done) {
       setFloating(true)
       setTimeout(() => setFloating(false), 1000)
@@ -24,10 +64,17 @@ export function QuestCard({ quest, done, streak = 0, onToggle }: Props) {
   return (
     <button
       onClick={handle}
-      className="relative w-full flex items-center gap-3 rounded-2xl p-3 text-left transition active:scale-[0.98] glass"
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={clearTimer}
+      onPointerCancel={clearTimer}
+      onPointerLeave={clearTimer}
+      onContextMenu={(e) => e.preventDefault()}
+      className={`relative w-full flex items-center gap-3 rounded-2xl p-3 text-left transition active:scale-[0.98] glass ${pressing ? 'animate-pressHold' : ''}`}
       style={{
         borderColor: done ? quest.color + '88' : undefined,
         background: done ? quest.color + '1f' : undefined,
+        touchAction: 'pan-y',
       }}
     >
       {/* icône */}
