@@ -3,6 +3,7 @@ import { usePersistentState } from '../../lib/storage'
 import { dayScore, levelFromXp, questsForDate, totalXp, currentStreak } from '../../lib/game'
 import { DIFFICULTY } from '../../data/defaultQuests'
 import { lastNDays, prettyDate, todayKey, weekdayShort } from '../../lib/date'
+import { ffxAssets } from '../../assets/ffx'
 import './ffx.css'
 
 /**
@@ -54,9 +55,15 @@ export function FFXDashboard() {
 
         {/* ——— Onglets ——— */}
         <nav className="ffx-tabs">
-          <button className="ffx-tab ffx-tab-active">Journal</button>
-          <button className="ffx-tab">Progression</button>
-          <button className="ffx-tab">Souvenirs</button>
+          <button className="ffx-tab ffx-tab-active">
+            <img src={ffxAssets.tabJournal} alt="" className="ffx-tab-icon" />Journal
+          </button>
+          <button className="ffx-tab">
+            <img src={ffxAssets.tabProgression} alt="" className="ffx-tab-icon" />Progression
+          </button>
+          <button className="ffx-tab">
+            <img src={ffxAssets.tabSouvenirs} alt="" className="ffx-tab-icon" />Souvenirs
+          </button>
         </nav>
 
         {/* ——— Navigation date ——— */}
