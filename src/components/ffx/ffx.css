@@ -1,0 +1,180 @@
+/* ——— Style Final Fantasy X (scopé sous .ffx-root) ———
+   Surcharge les règles pixel globales (border-radius:0, police pixel). */
+
+.ffx-root {
+  --ffx-ink: #222629;
+  --ffx-night: #32355a;
+  --ffx-slate: #4d5071;
+  --ffx-steel: #636e92;
+  --ffx-light: #7482a1;
+  --ffx-mist: #8f98a9;
+  --ffx-frost: #aab5c8;
+  --ffx-text: #dce0e5;
+  --ffx-gold: #f0c24c;
+  --ffx-overdrive: #f0a020;
+
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  font-family: 'Trebuchet MS', 'Segoe UI', system-ui, -apple-system, sans-serif !important;
+  color: var(--ffx-text);
+  background:
+    radial-gradient(130% 90% at 50% -10%, #8a96bb 0%, #5a6088 32%, #3a3f66 64%, #262a4a 100%);
+  letter-spacing: 0.2px;
+}
+
+/* filigrane héraldique estompé */
+.ffx-watermark {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 100 100'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1.2'%3E%3Ccircle cx='50' cy='50' r='34'/%3E%3Cpath d='M50 8v84M8 50h84M26 26l48 48M74 26L26 74'/%3E%3Ccircle cx='50' cy='50' r='16'/%3E%3Cpath d='M50 22l6 16h-12zM50 78l6-16h-12zM22 50l16 6v-12zM78 50l-16 6v-12z'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 460px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.ffx-root * {
+  border-radius: 0 !important; /* reset puis on ré-arrondit ci-dessous */
+  font-family: inherit !important;
+}
+
+.ffx-page {
+  position: relative;
+  z-index: 1;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 20px 18px 40px;
+}
+
+/* ——— En-tête ——— */
+.ffx-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 14px; }
+.ffx-date { font-size: 12px; color: var(--ffx-frost); text-transform: capitalize; }
+.ffx-title {
+  margin: 2px 0 0;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #fff;
+  text-shadow: 0 0 12px rgba(159, 208, 240, 0.5), 0 2px 2px rgba(0, 0, 0, 0.4);
+}
+.ffx-header-right { display: flex; align-items: center; gap: 10px; }
+
+/* ——— Primitives FFX ——— */
+.ffx-pill,
+.ffx-bar {
+  border-radius: 9999px !important;
+  background: linear-gradient(90deg, rgba(116,130,161,0.9) 0%, rgba(50,53,90,0.85) 62%, rgba(50,53,90,0.25) 100%);
+  border-top: 1px solid rgba(170,181,200,0.55);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 2px 5px rgba(0,0,0,0.3);
+  text-shadow: 0 1px 1px rgba(0,0,0,0.45);
+}
+.ffx-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; font-weight: 700; }
+.ffx-streak-icon { color: var(--ffx-gold); }
+.ffx-dim { color: var(--ffx-frost); font-weight: 400; }
+
+.ffx-bead {
+  border-radius: 9999px !important;
+  background: radial-gradient(circle at 40% 32%, #565b80, #1b1d31);
+  border: 1px solid rgba(170,181,200,0.4);
+  box-shadow: inset 0 2px 3px rgba(0,0,0,0.55), 0 1px 2px rgba(0,0,0,0.3);
+  display: inline-grid;
+  place-items: center;
+  color: #fff;
+  font-weight: 700;
+}
+.ffx-iconbtn { width: 40px; height: 40px; font-size: 18px; cursor: pointer; }
+.ffx-mini { width: 26px; height: 26px; font-size: 13px; }
+
+/* ——— Barre de niveau ——— */
+.ffx-level { display: flex; align-items: center; gap: 12px; padding: 10px 16px; }
+.ffx-level-bead { width: 30px; height: 30px; font-size: 14px; }
+.ffx-level-label { font-weight: 700; white-space: nowrap; }
+.ffx-level-track { flex: 1; height: 10px; background: rgba(0,0,0,0.35); border-radius: 9999px !important; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.6); }
+.ffx-level-fill { height: 100%; border-radius: 9999px !important; background: linear-gradient(90deg, #f0c24c, #f0a020); box-shadow: 0 0 8px rgba(240,160,32,0.6); }
+.ffx-level-xp { font-size: 12px; color: var(--ffx-frost); white-space: nowrap; }
+
+/* ——— Onglets ——— */
+.ffx-tabs { display: flex; gap: 8px; justify-content: center; margin: 14px 0; }
+.ffx-tab {
+  padding: 8px 22px; cursor: pointer; font-weight: 700; color: var(--ffx-frost);
+  background: linear-gradient(180deg, rgba(116,130,161,0.35), rgba(50,53,90,0.35));
+  border-radius: 9999px !important;
+  border-top: 1px solid rgba(170,181,200,0.3);
+}
+.ffx-tab-active {
+  color: #fff;
+  background: linear-gradient(180deg, rgba(240,194,76,0.28), rgba(240,160,32,0.18));
+  outline: 2px solid var(--ffx-gold);
+  box-shadow: 0 0 12px rgba(240,194,76,0.4);
+}
+
+/* ——— Navigation date ——— */
+.ffx-daynav { display: flex; align-items: center; gap: 10px; padding: 8px 12px; max-width: 460px; margin: 0 auto; }
+.ffx-daynav-center { flex: 1; text-align: center; display: flex; flex-direction: column; line-height: 1.2; }
+.ffx-daynav-center .ffx-dim { font-size: 10px; letter-spacing: 1px; }
+.ffx-daynav-center b { text-transform: capitalize; }
+.ffx-navarrow { width: 34px; height: 34px; cursor: pointer; color: #fff; font-size: 20px; background: rgba(0,0,0,0.25); border-radius: 9999px !important; }
+
+/* ——— Grille ——— */
+.ffx-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 16px; }
+@media (min-width: 900px) { .ffx-grid { grid-template-columns: 1fr 1fr; align-items: start; } }
+.ffx-col { display: flex; flex-direction: column; gap: 16px; }
+
+/* ——— Panneaux ——— */
+.ffx-panel {
+  border-radius: 14px !important;
+  padding: 16px;
+  background: linear-gradient(180deg, rgba(70,78,120,0.55), rgba(30,33,58,0.6));
+  border: 1px solid rgba(170,181,200,0.25);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 6px 18px rgba(0,0,0,0.35);
+  backdrop-filter: blur(3px);
+}
+.ffx-panel-head { display: flex; justify-content: space-between; align-items: center; font-weight: 700; margin-bottom: 10px; }
+.ffx-ok { color: #7fe0a0; font-size: 13px; }
+.ffx-section-title { font-size: 14px; font-weight: 700; color: var(--ffx-frost); margin: 4px 2px; }
+
+/* ——— Puissance du jour ——— */
+.ffx-power { display: flex; align-items: center; gap: 18px; }
+.ffx-gauge { position: relative; flex-shrink: 0; }
+.ffx-gauge-svg { transform: rotate(-90deg); }
+.ffx-gauge-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.ffx-gauge-score { font-size: 30px; font-weight: 800; color: #fff; }
+.ffx-power-title { font-size: 20px; font-weight: 700; color: #fff; }
+.ffx-power-stats { list-style: none; padding: 0; margin: 10px 0 0; display: flex; flex-direction: column; gap: 7px; font-size: 14px; }
+.ffx-power-stats li { display: flex; align-items: center; gap: 8px; }
+
+/* ——— Quêtes ——— */
+.ffx-quests { display: grid; grid-template-columns: 1fr; gap: 8px; }
+@media (min-width: 480px) { .ffx-quests { grid-template-columns: 1fr 1fr; } }
+.ffx-quest { display: flex; align-items: center; gap: 10px; padding: 8px 12px; }
+.ffx-quest-done { background: linear-gradient(90deg, rgba(240,194,76,0.3) 0%, rgba(240,160,32,0.12) 70%, transparent 100%); }
+.ffx-quest-icon { font-size: 24px; width: 34px; text-align: center; flex-shrink: 0; }
+.ffx-quest-body { flex: 1; min-width: 0; }
+.ffx-quest-label { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ffx-quest-meta { font-size: 11px; display: flex; gap: 8px; }
+.ffx-check {
+  width: 26px; height: 26px; flex-shrink: 0; border-radius: 9999px !important;
+  border: 2px solid rgba(170,181,200,0.5); display: grid; place-items: center;
+  color: var(--ffx-ink); font-weight: 900; background: rgba(0,0,0,0.2);
+}
+.ffx-check-on { background: linear-gradient(180deg, #f0c24c, #f0a020); border-color: var(--ffx-gold); box-shadow: 0 0 8px rgba(240,194,76,0.6); }
+
+/* ——— Courbe ——— */
+.ffx-curve { width: 100%; display: block; }
+.ffx-curve-stats { display: flex; gap: 10px; margin-top: 8px; }
+.ffx-statcell { flex: 1; text-align: center; padding: 8px; border-radius: 10px !important; background: rgba(0,0,0,0.22); }
+.ffx-statval { font-size: 20px; font-weight: 800; color: var(--ffx-gold); }
+.ffx-statlabel { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* ——— Boîte de dialogue (moment positif) ——— */
+.ffx-dialogue {
+  min-height: 90px; padding: 12px 14px; font-size: 14px; line-height: 1.5;
+  border-radius: 10px !important;
+  background: linear-gradient(180deg, rgba(60,52,110,0.5), rgba(40,36,80,0.5));
+  border: 1px solid rgba(150,160,220,0.35);
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.4);
+}
+
+.ffx-foot { text-align: center; font-size: 11px; color: var(--ffx-frost); opacity: 0.7; margin-top: 24px; }

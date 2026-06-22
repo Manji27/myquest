@@ -11,3 +11,6 @@ dev-dist
 !.env.example
 .DS_Store
 /*.png
+
+# Références de design (captures de jeux sous copyright — usage local uniquement)
+references/
