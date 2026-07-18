@@ -9,6 +9,9 @@ type Props = {
   today: string
   state: AppState
   onChange: (key: string) => void
+  previousIcon?: string
+  nextIcon?: string
+  calendarIcon?: string
 }
 
 function relativeLabel(value: string, today: string): string {
@@ -19,7 +22,15 @@ function relativeLabel(value: string, today: string): string {
 }
 
 /** Barre de navigation jour précédent / suivant + ouverture du calendrier. */
-export function DayNavigator({ value, today, state, onChange }: Props) {
+export function DayNavigator({
+  value,
+  today,
+  state,
+  onChange,
+  previousIcon,
+  nextIcon,
+  calendarIcon,
+}: Props) {
   const [calOpen, setCalOpen] = useState(false)
   const isToday = value >= today
 
@@ -31,7 +42,18 @@ export function DayNavigator({ value, today, state, onChange }: Props) {
           aria-label="Jour précédent"
           className="w-11 h-11 grid place-items-center bg-white/5 active:scale-90 transition"
         >
-          <PixelIcon name="arrow" size={26} className="-scale-x-100" alt="précédent" />
+          {previousIcon ? (
+            <img
+              src={previousIcon}
+              width={32}
+              height={32}
+              className="day-nav-image"
+              alt="précédent"
+              draggable={false}
+            />
+          ) : (
+            <PixelIcon name="arrow" size={26} className="-scale-x-100" alt="précédent" />
+          )}
         </button>
 
         <button
@@ -39,7 +61,18 @@ export function DayNavigator({ value, today, state, onChange }: Props) {
           aria-label="Ouvrir le calendrier"
           className="flex-1 flex items-center justify-center gap-2.5 active:scale-[0.98] transition"
         >
-          <PixelIcon name="calendar" size={24} alt="" />
+          {calendarIcon ? (
+            <img
+              src={calendarIcon}
+              width={36}
+              height={36}
+              className="day-nav-calendar-image"
+              alt=""
+              draggable={false}
+            />
+          ) : (
+            <PixelIcon name="calendar" size={24} alt="" />
+          )}
           <div className="text-left">
             <div className="text-[11px] uppercase tracking-wide text-indigo-300">
               {relativeLabel(value, today)}
@@ -54,7 +87,18 @@ export function DayNavigator({ value, today, state, onChange }: Props) {
           aria-label="Jour suivant"
           className="w-11 h-11 grid place-items-center bg-white/5 active:scale-90 transition disabled:opacity-25 disabled:active:scale-100"
         >
-          <PixelIcon name="arrow" size={26} alt="suivant" />
+          {nextIcon ? (
+            <img
+              src={nextIcon}
+              width={32}
+              height={32}
+              className="day-nav-image"
+              alt="suivant"
+              draggable={false}
+            />
+          ) : (
+            <PixelIcon name="arrow" size={26} alt="suivant" />
+          )}
         </button>
       </div>
 

@@ -2,20 +2,40 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { AppState } from '../types'
 import { computeStats } from '../lib/stats'
 import { ACHIEVEMENTS, isUnlocked } from '../lib/achievements'
+import { LifepathCard } from './LifepathCard'
 import { downloadBackup, parseBackup } from '../lib/backup'
 import type { CloudSync } from '../lib/useCloudSync'
 import { disablePush, enablePush, isPushEnabled, localTimezone, pushSupported } from '../lib/push'
 import { Heatmap } from './Heatmap'
 import { WeeklySummary } from './WeeklySummary'
+import { CYBERPUNK_ACHIEVEMENT_ART } from './cyberpunk/achievementArt'
+import cyberpunkCloudIcon from '../../references/cyberpunk-ui/cyberpunk-icons/ui-cloud-sync.png'
+import cyberpunkNotificationIcon from '../../references/cyberpunk-ui/cyberpunk-icons/ui-notification-bell.png'
+import cyberpunkBackupExportIcon from '../../references/cyberpunk-ui/cyberpunk-icons/ui-backup-export.png'
+import cyberpunkBackupImportIcon from '../../references/cyberpunk-ui/cyberpunk-icons/ui-backup-import.png'
 
 type Props = {
   state: AppState
   setState: (updater: (s: AppState) => AppState) => void
   cloud: CloudSync
   onOpenDay: (key: string) => void
+  /** Remplace les emojis des succès par leurs illustrations cyberpunk. */
+  cyberpunkAchievementPreview?: boolean
+  /** Active les icônes d'interface propres au thème cyberpunk. */
+  cyberpunkUi?: boolean
+  /** Illustrations optionnelles des quêtes, indexées par identifiant. */
+  questIconImages?: Readonly<Record<string, string>>
 }
 
-export function Progression({ state, setState, cloud, onOpenDay }: Props) {
+export function Progression({
+  state,
+  setState,
+  cloud,
+  onOpenDay,
+  cyberpunkAchievementPreview = false,
+  cyberpunkUi = false,
+  questIconImages,
+}: Props) {
   const stats = useMemo(() => computeStats(state), [state])
   const fileRef = useRef<HTMLInputElement>(null)
   const [notice, setNotice] = useState<string | null>(null)
@@ -43,10 +63,10 @@ export function Progression({ state, setState, cloud, onOpenDay }: Props) {
   return (
     <div className="mt-4 space-y-6">
       {/* synchronisation cloud */}
-      <CloudCard cloud={cloud} />
+      <CloudCard cloud={cloud} cyberpunkUi={cyberpunkUi} />
 
       {/* rappel quotidien */}
-      <ReminderCard cloud={cloud} state={state} setState={setState} />
+      <ReminderCard cloud={cloud} state={state} setState={setState} cyberpunkUi={cyberpunkUi} />
 
       {/* heatmap annuelle */}
       <Heatmap state={state} onSelectDay={onOpenDay} />
@@ -68,40 +88,34 @@ export function Progression({ state, setState, cloud, onOpenDay }: Props) {
           <h3 className="text-sm font-bold text-indigo-300">Succès</h3>
           <span className="text-xs text-slate-500">{unlocked.length}/{ACHIEVEMENTS.length} débloqués</span>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {ACHIEVEMENTS.map((a) => {
             const done = isUnlocked(a, stats)
             const value = a.value(stats)
+            const achievementArt = cyberpunkAchievementPreview
+              ? CYBERPUNK_ACHIEVEMENT_ART[a.id]
+              : undefined
             return (
-              <div
+              <LifepathCard
                 key={a.id}
-                className={`rounded-2xl p-3 border transition ${
-                  done
-                    ? 'border-indigo-400/40 bg-indigo-500/10'
-                    : 'border-white/8 bg-white/[0.03]'
-                }`}
-              >
-                <div className={`text-2xl mb-1 ${done ? '' : 'grayscale opacity-40'}`}>{a.icon}</div>
-                <div className={`text-sm font-semibold ${done ? 'text-white' : 'text-slate-400'}`}>
-                  {a.title}
-                </div>
-                <div className="text-[11px] text-slate-500 mt-0.5 leading-tight">{a.desc}</div>
-                {done ? (
-                  <div className="text-[11px] font-bold text-emerald-400 mt-1.5">✓ Débloqué</div>
-                ) : (
-                  <div className="mt-1.5">
-                    <div className="h-1 rounded-full bg-white/10 overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-indigo-400/70"
-                        style={{ width: `${Math.min((value / a.target) * 100, 100)}%` }}
-                      />
-                    </div>
-                    <div className="text-[10px] text-slate-500 mt-1">
-                      {Math.min(value, a.target)} / {a.target}
-                    </div>
-                  </div>
-                )}
-              </div>
+                title={a.title}
+                desc={a.desc}
+                unlocked={done}
+                progress={[value, a.target]}
+                art={
+                  achievementArt ? (
+                    <>
+                      <img src={achievementArt} alt="" />
+                      <span className="hint">{done ? 'Débloqué' : 'Verrouillé'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="ico">{a.icon}</span>
+                      <span className="hint">{done ? 'Débloqué' : 'Verrouillé'}</span>
+                    </>
+                  )
+                }
+              />
             )
           })}
         </div>
@@ -119,7 +133,15 @@ export function Progression({ state, setState, cloud, onOpenDay }: Props) {
               <div key={quest.id}>
                 <div className="flex items-center justify-between text-sm mb-1">
                   <span className="flex items-center gap-2 min-w-0">
-                    <span>{quest.icon}</span>
+                    {questIconImages?.[quest.id] ? (
+                      <img
+                        src={questIconImages[quest.id]}
+                        alt=""
+                        className="quest-stat-image"
+                      />
+                    ) : (
+                      <span>{quest.icon}</span>
+                    )}
                     <span className="truncate">{quest.label}</span>
                   </span>
                   <span className="text-xs text-slate-400 shrink-0">
@@ -146,18 +168,28 @@ export function Progression({ state, setState, cloud, onOpenDay }: Props) {
             Tes données vivent uniquement sur cet appareil. Exporte une sauvegarde régulièrement
             pour ne rien perdre, ou pour la transférer sur un autre appareil.
           </p>
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className={`flex flex-col sm:flex-row gap-2 ${cyberpunkUi ? 'cp-backup-actions' : ''}`}>
             <button
               onClick={() => downloadBackup(state)}
-              className="flex-1 rounded-xl bg-gradient-to-r from-indigo-500 to-fuchsia-500 py-2.5 font-semibold active:scale-[0.98] transition"
+              className={cyberpunkUi
+                ? 'cp-backup-button cp-backup-button-export'
+                : 'flex-1 rounded-xl bg-gradient-to-r from-indigo-500 to-fuchsia-500 py-2.5 font-semibold active:scale-[0.98] transition'}
             >
-              ⬇️ Exporter ma sauvegarde
+              {cyberpunkUi
+                ? <img className="cp-backup-button-icon" src={cyberpunkBackupExportIcon} alt="" />
+                : <span aria-hidden="true">⬇️</span>}
+              <span>Exporter ma sauvegarde</span>
             </button>
             <button
               onClick={() => fileRef.current?.click()}
-              className="flex-1 rounded-xl bg-white/5 hover:bg-white/10 py-2.5 font-semibold active:scale-[0.98] transition"
+              className={cyberpunkUi
+                ? 'cp-backup-button cp-backup-button-import'
+                : 'flex-1 rounded-xl bg-white/5 hover:bg-white/10 py-2.5 font-semibold active:scale-[0.98] transition'}
             >
-              ⬆️ Importer une sauvegarde
+              {cyberpunkUi
+                ? <img className="cp-backup-button-icon" src={cyberpunkBackupImportIcon} alt="" />
+                : <span aria-hidden="true">⬆️</span>}
+              <span>Importer une sauvegarde</span>
             </button>
             <input
               ref={fileRef}
@@ -182,10 +214,12 @@ function ReminderCard({
   cloud,
   state,
   setState,
+  cyberpunkUi,
 }: {
   cloud: CloudSync
   state: AppState
   setState: (u: (s: AppState) => AppState) => void
+  cyberpunkUi: boolean
 }) {
   const [deviceOn, setDeviceOn] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -216,7 +250,10 @@ function ReminderCard({
   if (!pushSupported) {
     return (
       <section className="glass rounded-2xl p-4">
-        <h3 className="text-sm font-bold text-indigo-300 mb-1">🔔 Rappel quotidien</h3>
+        <h3 className="text-sm font-bold text-indigo-300 mb-1 flex items-center gap-2">
+          <ProgressionHeadingIcon cyberpunkUi={cyberpunkUi} src={cyberpunkNotificationIcon} emoji="🔔" />
+          <span>Rappel quotidien</span>
+        </h3>
         <p className="text-xs text-slate-400">
           Les notifications ne sont pas supportées sur cet appareil/navigateur. Sur iPhone, installe
           d'abord l'app sur ton écran d'accueil.
@@ -228,7 +265,10 @@ function ReminderCard({
   if (!cloud.user) {
     return (
       <section className="glass rounded-2xl p-4">
-        <h3 className="text-sm font-bold text-indigo-300 mb-1">🔔 Rappel quotidien</h3>
+        <h3 className="text-sm font-bold text-indigo-300 mb-1 flex items-center gap-2">
+          <ProgressionHeadingIcon cyberpunkUi={cyberpunkUi} src={cyberpunkNotificationIcon} emoji="🔔" />
+          <span>Rappel quotidien</span>
+        </h3>
         <p className="text-xs text-slate-400">Connecte-toi (ci-dessus) pour activer les rappels.</p>
       </section>
     )
@@ -265,7 +305,10 @@ function ReminderCard({
     <section className="glass rounded-2xl p-4">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="text-sm font-bold text-indigo-300 mb-0.5">🔔 Rappel quotidien</h3>
+          <h3 className="text-sm font-bold text-indigo-300 mb-0.5 flex items-center gap-2">
+            <ProgressionHeadingIcon cyberpunkUi={cyberpunkUi} src={cyberpunkNotificationIcon} emoji="🔔" />
+            <span>Rappel quotidien</span>
+          </h3>
           <p className="text-xs text-slate-400">
             {deviceOn ? 'Rappel envoyé si tes quêtes du jour ne sont pas toutes accomplies.' : 'Active une notification pour ne pas casser ta série.'}
           </p>
@@ -323,10 +366,12 @@ function ReminderCard({
   )
 }
 
-function CloudCard({ cloud }: { cloud: CloudSync }) {
+function CloudCard({ cloud, cyberpunkUi }: { cloud: CloudSync; cyberpunkUi: boolean }) {
   const [email, setEmail] = useState('')
   const [sent, setSent] = useState<string | null>(null)
   const [sending, setSending] = useState(false)
+  const [code, setCode] = useState('')
+  const [verifying, setVerifying] = useState(false)
 
   async function submit() {
     if (!/^\S+@\S+\.\S+$/.test(email.trim())) return
@@ -336,13 +381,28 @@ function CloudCard({ cloud }: { cloud: CloudSync }) {
     if (ok) setSent(email.trim())
   }
 
+  async function submitCode() {
+    if (!sent || code.trim().length < 4) return
+    setVerifying(true)
+    const ok = await cloud.verify(sent, code)
+    setVerifying(false)
+    if (ok) {
+      // connexion réussie → onAuthChange bascule la carte sur l'état « connecté »
+      setSent(null)
+      setCode('')
+    }
+  }
+
   // cloud non configuré
   if (!cloud.cloudEnabled) {
     return (
       <section className="glass rounded-2xl p-4">
-        <h3 className="text-sm font-bold text-indigo-300 mb-1 flex items-center gap-2">☁️ Synchronisation cloud</h3>
+        <h3 className="text-sm font-bold text-indigo-300 mb-1 flex items-center gap-2">
+          <ProgressionHeadingIcon cyberpunkUi={cyberpunkUi} src={cyberpunkCloudIcon} emoji="☁️" />
+          <span>Synchronisation cloud</span>
+        </h3>
         <p className="text-xs text-slate-400">
-          Pas encore configurée. Suis le guide <span className="text-slate-300 font-medium">SUPABASE.md</span> pour
+          Pas encore configurée. Suis le guide <span className="text-slate-300 font-medium">NEON.md</span> pour
           activer la sauvegarde en ligne et l'accès multi-appareils.
         </p>
       </section>
@@ -352,42 +412,87 @@ function CloudCard({ cloud }: { cloud: CloudSync }) {
   // connecté
   if (cloud.user) {
     return (
-      <section className="glass rounded-2xl p-4">
+      <section className="glass rounded-2xl p-4" aria-live="polite">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <h3 className="text-sm font-bold text-indigo-300 mb-0.5 flex items-center gap-2">☁️ Synchronisation cloud</h3>
-            <p className="text-xs text-slate-400 truncate">{cloud.user.email}</p>
-            <p className="text-xs mt-1">
+            <h3 className="text-sm font-bold text-indigo-300 mb-0.5 flex items-center gap-2">
+              <ProgressionHeadingIcon cyberpunkUi={cyberpunkUi} src={cyberpunkCloudIcon} emoji="☁️" />
+              <span>Synchronisation cloud</span>
+            </h3>
+            <div className="mt-2 mb-2 flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/40 bg-emerald-400/10 px-2.5 py-1 text-xs font-bold text-emerald-300">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_currentColor]" />
+                Connexion confirmée
+              </span>
+              <span className="text-xs text-slate-400 truncate">{cloud.user.email}</span>
+            </div>
+            <p className="rounded-lg border border-white/10 bg-black/20 px-2.5 py-2 text-xs">
               {cloud.status === 'syncing' && <span className="text-amber-400">⟳ Synchronisation…</span>}
+              {cloud.status === 'offline' && <span className="text-amber-400">Hors ligne — reprise automatique</span>}
               {cloud.status === 'synced' && (
                 <span className="text-emerald-400">
-                  ✓ Synchronisé{cloud.lastSync ? ` à ${formatTime(cloud.lastSync)}` : ''}
+                  ✓ Données sauvegardées sur Neon{cloud.lastSync ? ` à ${formatTime(cloud.lastSync)}` : ''}
                 </span>
               )}
               {cloud.status === 'error' && <span className="text-red-400">⚠️ {cloud.error}</span>}
             </p>
           </div>
-          <button
-            onClick={() => cloud.signOut()}
-            className="shrink-0 rounded-xl bg-white/5 hover:bg-white/10 px-3 py-2 text-sm font-medium active:scale-[0.97] transition"
-          >
-            Déconnexion
-          </button>
+          <div className="shrink-0 flex flex-col sm:flex-row gap-2">
+            <button
+              onClick={() => void cloud.sync()}
+              disabled={cloud.status === 'syncing'}
+              className="rounded-xl bg-white/5 hover:bg-white/10 px-3 py-2 text-sm font-medium disabled:opacity-40 active:scale-[0.97] transition"
+            >
+              Synchroniser
+            </button>
+            <button
+              onClick={() => void cloud.signOut()}
+              className="rounded-xl bg-white/5 hover:bg-white/10 px-3 py-2 text-sm font-medium active:scale-[0.97] transition"
+            >
+              Déconnexion
+            </button>
+          </div>
         </div>
       </section>
     )
   }
 
-  // déconnecté : lien envoyé
+  // déconnecté : code envoyé → saisie du code
   if (sent) {
     return (
       <section className="glass rounded-2xl p-4">
-        <h3 className="text-sm font-bold text-indigo-300 mb-1 flex items-center gap-2">📧 Vérifie tes emails</h3>
-        <p className="text-xs text-slate-400">
-          Un lien de connexion a été envoyé à <span className="text-slate-200 font-medium">{sent}</span>.
-          Ouvre-le sur cet appareil pour synchroniser tes données. (Pense à regarder les spams.)
+        <h3 className="text-sm font-bold text-indigo-300 mb-1 flex items-center gap-2">📧 Entre ton code</h3>
+        <p className="text-xs text-slate-400 mb-3">
+          Un code de connexion a été envoyé à <span className="text-slate-200 font-medium">{sent}</span>.
+          Saisis-le ci-dessous pour synchroniser tes données. (Pense à regarder les spams.)
         </p>
-        <button onClick={() => setSent(null)} className="text-xs text-indigo-300 mt-2 underline">
+        <div className="flex flex-col sm:flex-row gap-2">
+          <input
+            type="text"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && submitCode()}
+            placeholder="Code à 6 chiffres"
+            className="flex-1 rounded-xl bg-white/5 p-2.5 text-sm tracking-widest outline-none focus:ring-2 focus:ring-indigo-400/40"
+          />
+          <button
+            onClick={submitCode}
+            disabled={verifying || code.trim().length < 4}
+            className="rounded-xl bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-4 py-2.5 font-semibold disabled:opacity-40 active:scale-[0.98] transition"
+          >
+            {verifying ? 'Connexion…' : 'Valider'}
+          </button>
+        </div>
+        {cloud.error && <p className="text-xs text-red-400 mt-2">⚠️ {cloud.error}</p>}
+        <button
+          onClick={() => {
+            setSent(null)
+            setCode('')
+          }}
+          className="text-xs text-indigo-300 mt-2 underline"
+        >
           Utiliser une autre adresse
         </button>
       </section>
@@ -397,10 +502,13 @@ function CloudCard({ cloud }: { cloud: CloudSync }) {
   // déconnecté : formulaire
   return (
     <section className="glass rounded-2xl p-4">
-      <h3 className="text-sm font-bold text-indigo-300 mb-1 flex items-center gap-2">☁️ Synchronisation cloud</h3>
+      <h3 className="text-sm font-bold text-indigo-300 mb-1 flex items-center gap-2">
+        <ProgressionHeadingIcon cyberpunkUi={cyberpunkUi} src={cyberpunkCloudIcon} emoji="☁️" />
+        <span>Synchronisation cloud</span>
+      </h3>
       <p className="text-xs text-slate-400 mb-3">
         Connecte-toi pour sauvegarder tes données en ligne et les retrouver sur tous tes appareils.
-        Tu recevras un lien de connexion par email.
+        Tu recevras un code de connexion par email.
       </p>
       <div className="flex flex-col sm:flex-row gap-2">
         <input
@@ -416,12 +524,26 @@ function CloudCard({ cloud }: { cloud: CloudSync }) {
           disabled={sending || !/^\S+@\S+\.\S+$/.test(email.trim())}
           className="rounded-xl bg-gradient-to-r from-indigo-500 to-fuchsia-500 px-4 py-2.5 font-semibold disabled:opacity-40 active:scale-[0.98] transition"
         >
-          {sending ? 'Envoi…' : 'Recevoir le lien'}
+          {sending ? 'Envoi…' : 'Recevoir le code'}
         </button>
       </div>
       {cloud.error && <p className="text-xs text-red-400 mt-2">⚠️ {cloud.error}</p>}
     </section>
   )
+}
+
+function ProgressionHeadingIcon({
+  cyberpunkUi,
+  src,
+  emoji,
+}: {
+  cyberpunkUi: boolean
+  src: string
+  emoji: string
+}) {
+  return cyberpunkUi
+    ? <img className="cp-ui-heading-icon" src={src} alt="" />
+    : <span aria-hidden="true">{emoji}</span>
 }
 
 function SummaryCard({ label, value, accent }: { label: string; value: string | number; accent: string }) {

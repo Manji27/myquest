@@ -1,16 +1,18 @@
 import { useMemo } from 'react'
 import type { AppState } from '../types'
 import { MONTHS, keyToDate, prettyDate } from '../lib/date'
+import cyberpunkMemoryArchiveIcon from '../../references/cyberpunk-ui/cyberpunk-icons/ui-memory-archive.png'
 
 type Props = {
   state: AppState
   onOpenDay: (key: string) => void
+  cyberpunkUi?: boolean
 }
 
 type MonthGroup = { label: string; ym: string; entries: { key: string; text: string }[] }
 
 /** Récap de tous les moments positifs, regroupés par mois (du plus récent au plus ancien). */
-export function Memories({ state, onOpenDay }: Props) {
+export function Memories({ state, onOpenDay, cyberpunkUi = false }: Props) {
   const groups = useMemo<MonthGroup[]>(() => {
     const entries = Object.values(state.logs)
       .filter((l) => l.positiveEvent.trim().length > 0)
@@ -32,8 +34,12 @@ export function Memories({ state, onOpenDay }: Props) {
 
   if (total === 0) {
     return (
-      <div className="glass rounded-3xl p-8 text-center text-slate-400 mt-4 max-w-md mx-auto">
-        <div className="text-4xl mb-3">📖</div>
+      <div className={`glass rounded-3xl p-8 text-center text-slate-400 mt-4 max-w-md mx-auto ${cyberpunkUi ? 'cp-memory-empty' : ''}`}>
+        {cyberpunkUi ? (
+          <img className="cp-memory-empty-icon" src={cyberpunkMemoryArchiveIcon} alt="" />
+        ) : (
+          <div className="text-4xl mb-3" aria-hidden="true">📖</div>
+        )}
         <p className="font-semibold text-slate-200 mb-1">Aucun souvenir pour l'instant</p>
         <p className="text-sm">
           Note un moment positif dans ton journal du jour, il apparaîtra ici.

@@ -1,17 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { AppState } from '../types'
 import {
+  CloudConflictError,
   cloudEnabled,
+  getCurrentCloudUser,
   onAuthChange,
   pullState,
   pushState,
   sendMagicLink,
   signOutCloud,
+  verifyCode,
   type CloudUser,
 } from './cloud'
 import { mergeStates } from './merge'
 
-export type CloudStatus = 'disabled' | 'signedOut' | 'syncing' | 'synced' | 'error'
+export type CloudStatus = 'disabled' | 'signedOut' | 'syncing' | 'synced' | 'offline' | 'error'
 
 export type CloudSync = {
   cloudEnabled: boolean
@@ -19,20 +22,23 @@ export type CloudSync = {
   status: CloudStatus
   lastSync: number | null
   error: string | null
+  sync: () => Promise<void>
   sendLink: (email: string) => Promise<boolean>
+  verify: (email: string, code: string) => Promise<boolean>
   signOut: () => Promise<void>
 }
 
-/** Signature de contenu : sert à éviter les push redondants (et les boucles d'écho). */
-function sig(s: AppState): string {
-  return JSON.stringify([s.logs, s.quests.length, s.seenAchievements ?? []])
+/** Signature complète : les horloges font partie des données à synchroniser. */
+function sig(state: AppState): string {
+  return JSON.stringify(state)
 }
 
 /**
- * Synchro cloud « ouverte → fusion → push automatique ».
- * - À la connexion : on récupère le distant, on FUSIONNE avec le local (aucune perte), on applique et on renvoie.
- * - À chaque modification : push automatique (débattu de 1,5 s).
- * @param applyRemote applique un état distant sans le ré-estampiller (setter brut)
+ * Synchronisation multi-appareils :
+ * - pull + fusion avant chaque push ;
+ * - écriture atomique par révision ;
+ * - nouvelle tentative si un autre appareil gagne la course ;
+ * - reprise au retour en ligne ou au premier plan.
  */
 export function useCloudSync(state: AppState, applyRemote: (s: AppState) => void): CloudSync {
   const [user, setUser] = useState<CloudUser | null>(null)
@@ -43,84 +49,200 @@ export function useCloudSync(state: AppState, applyRemote: (s: AppState) => void
   const stateRef = useRef(state)
   stateRef.current = state
   const syncedUserId = useRef<string | null>(null)
-  const lastPushedSig = useRef<string>('')
+  const lastSyncedSig = useRef('')
   const pushTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const running = useRef<Promise<void> | null>(null)
+  const pending = useRef(false)
 
-  // écoute l'état de connexion
-  useEffect(() => {
-    if (!cloudEnabled) return
-    return onAuthChange((u) => {
-      setUser(u)
-      if (!u) {
-        setStatus('signedOut')
-        syncedUserId.current = null
-      }
+  const setStableUser = useCallback((nextUser: CloudUser | null) => {
+    setUser((current) => {
+      if (current?.id === nextUser?.id && current?.email === nextUser?.email) return current
+      return nextUser
     })
   }, [])
 
-  // synchro initiale à la connexion
-  useEffect(() => {
+  const reconcile = useCallback(async () => {
     if (!cloudEnabled || !user) return
-    if (syncedUserId.current === user.id) return
-    syncedUserId.current = user.id
-    setStatus('syncing')
-    setError(null)
-    ;(async () => {
-      try {
-        const remote = await pullState(user.id)
-        const local = stateRef.current
-        const merged = remote ? mergeStates(local, remote) : local
-        if (remote) applyRemote(merged)
-        await pushState(user.id, merged)
-        lastPushedSig.current = sig(merged)
-        setStatus('synced')
-        setLastSync(Date.now())
-      } catch (e) {
-        setStatus('error')
-        setError(humanError(e))
+    if (!navigator.onLine) {
+      setStatus('offline')
+      return
+    }
+    if (running.current) {
+      pending.current = true
+      return running.current
+    }
+
+    const operation = (async () => {
+      setStatus('syncing')
+      setError(null)
+      for (let attempt = 0; attempt < 4; attempt += 1) {
+        try {
+          const remote = await pullState(user.id)
+          const local = stateRef.current
+          const merged = remote ? mergeStates(local, remote.state) : local
+          const mergedSig = sig(merged)
+          const remoteSig = remote ? sig(remote.state) : ''
+
+          if (sig(local) !== mergedSig) {
+            stateRef.current = merged
+            applyRemote(merged)
+          }
+
+          if (remote && mergedSig === remoteSig) {
+            lastSyncedSig.current = mergedSig
+            setStatus('synced')
+            setLastSync(Date.now())
+            return
+          }
+
+          await pushState(user.id, merged, remote?.revision ?? null, remote?.state)
+          lastSyncedSig.current = mergedSig
+          setStatus('synced')
+          setLastSync(Date.now())
+          return
+        } catch (cause) {
+          if (cause instanceof CloudConflictError && attempt < 3) continue
+          throw cause
+        }
       }
     })()
-  }, [user, applyRemote])
+      .catch((cause) => {
+        if (!navigator.onLine) setStatus('offline')
+        else setStatus('error')
+        setError(humanError(cause))
+      })
+      .finally(() => {
+        running.current = null
+        if (pending.current) {
+          pending.current = false
+          queueMicrotask(() => void reconcile())
+        }
+      })
 
-  // push automatique débattu à chaque modification locale
+    running.current = operation
+    return operation
+  }, [applyRemote, user])
+
   useEffect(() => {
-    if (!cloudEnabled || !user || syncedUserId.current !== user.id) return
-    if (sig(state) === lastPushedSig.current) return
-    clearTimeout(pushTimer.current)
-    setStatus('syncing')
-    pushTimer.current = setTimeout(async () => {
-      try {
-        const snapshot = stateRef.current
-        await pushState(user.id, snapshot)
-        lastPushedSig.current = sig(snapshot)
-        setStatus('synced')
-        setLastSync(Date.now())
-      } catch (e) {
-        setStatus('error')
-        setError(humanError(e))
+    if (!cloudEnabled) return
+    let active = true
+    const unsubscribe = onAuthChange((nextUser) => {
+      if (!active) return
+      setStableUser(nextUser)
+      if (!nextUser) {
+        setStatus('signedOut')
+        syncedUserId.current = null
+        lastSyncedSig.current = ''
       }
-    }, 1500)
-    return () => clearTimeout(pushTimer.current)
-  }, [state, user])
+    })
+    void getCurrentCloudUser()
+      .then((nextUser) => {
+        if (!active) return
+        setStableUser(nextUser)
+        setStatus(nextUser ? 'syncing' : 'signedOut')
+      })
+      .catch((cause) => {
+        if (!active) return
+        setStatus('error')
+        setError(humanError(cause))
+      })
+    return () => {
+      active = false
+      unsubscribe()
+    }
+  }, [setStableUser])
 
-  /** Envoie le lien de connexion. Renvoie true si l'email est parti. */
+  // Première synchronisation de la session.
+  useEffect(() => {
+    if (!user || syncedUserId.current === user.id) return
+    syncedUserId.current = user.id
+    void reconcile()
+  }, [user, reconcile])
+
+  // Toute modification locale est réconciliée après un court délai.
+  useEffect(() => {
+    if (!user || syncedUserId.current !== user.id) return
+    if (sig(state) === lastSyncedSig.current) return
+    clearTimeout(pushTimer.current)
+    setStatus(navigator.onLine ? 'syncing' : 'offline')
+    pushTimer.current = setTimeout(() => void reconcile(), 1500)
+    return () => clearTimeout(pushTimer.current)
+  }, [state, user, reconcile])
+
+  // Un appareil reprend les nouveautés dès que l'app revient au premier plan.
+  useEffect(() => {
+    if (!user) return
+    const resume = () => {
+      if (document.visibilityState === 'visible') void reconcile()
+    }
+    const online = () => void reconcile()
+    window.addEventListener('focus', resume)
+    window.addEventListener('online', online)
+    document.addEventListener('visibilitychange', resume)
+    return () => {
+      window.removeEventListener('focus', resume)
+      window.removeEventListener('online', online)
+      document.removeEventListener('visibilitychange', resume)
+    }
+  }, [user, reconcile])
+
   const sendLink = useCallback(async (email: string) => {
     try {
       setError(null)
       await sendMagicLink(email.trim())
       return true
-    } catch (e) {
-      setError(humanError(e))
+    } catch (cause) {
+      setError(humanError(cause))
       return false
     }
   }, [])
 
-  return { cloudEnabled, user, status, lastSync, error, sendLink, signOut: signOutCloud }
+  const verify = useCallback(async (email: string, code: string) => {
+    try {
+      setError(null)
+      const nextUser = await verifyCode(email.trim(), code)
+      setStableUser(nextUser)
+      setStatus('syncing')
+      return true
+    } catch (cause) {
+      setError(humanError(cause))
+      return false
+    }
+  }, [setStableUser])
+
+  const signOut = useCallback(async () => {
+    try {
+      await signOutCloud()
+      setUser(null)
+      setStatus('signedOut')
+      setLastSync(null)
+      setError(null)
+      syncedUserId.current = null
+      lastSyncedSig.current = ''
+    } catch (cause) {
+      setStatus('error')
+      setError(humanError(cause))
+    }
+  }, [])
+
+  return {
+    cloudEnabled,
+    user,
+    status,
+    lastSync,
+    error,
+    sync: reconcile,
+    sendLink,
+    verify,
+    signOut,
+  }
 }
 
-function humanError(e: unknown): string {
-  const msg = (e as Error)?.message ?? String(e)
-  if (msg.toLowerCase().includes('network')) return 'Problème de réseau.'
-  if (msg.includes('rate limit') || msg.includes('60 seconds')) return 'Trop de tentatives, réessaie dans une minute.'
-  return msg
+function humanError(error: unknown): string {
+  const message = (error as Error)?.message ?? String(error)
+  if (message.toLowerCase().includes('network')) return 'Problème de réseau.'
+  if (message.includes('rate limit') || message.includes('60 seconds')) {
+    return 'Trop de tentatives, réessaie dans une minute.'
+  }
+  return message
 }

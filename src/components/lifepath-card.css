@@ -1,0 +1,227 @@
+/* ============================================================
+   LIFEPATH CARD — cadre de carte façon Cyberpunk 2077
+   Reproduction fidèle de l'écran « V's Lifepath »
+   (references/cyberpunk-ui/cyberpunk-2077-lifepath.png)
+
+   Géométrie mesurée sur le screenshot 1920×1080 :
+   — Carte sélectionnée (Corpo) :
+     · bord gauche épais ~6 px  #fc4949
+     · barre droite ~20 px #ff6058 qui DÉPASSE le haut de ~6 px
+       et se termine en biseau avant le bas
+     · bord haut 1-2 px, bord bas ~4 px
+     · coin bas-droit coupé en diagonale (~24 px)
+     · halo rouge autour, texte descriptif #ff5b53 dessous
+   — Carte normale (Nomad/Streetkid) :
+     · pas de bord haut ; flancs à peine marqués (rouge sombre)
+       qui s'intensifient vers le bas
+     · ligne basse vive ~2 px #e8433c
+     · coin bas-droit coupé pareil
+     · médaillon vertical centré en bas (≈10×48 px,
+       contour #ff5a49, fond #b21817)
+   — Titre au-dessus : #d4413a
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap');
+
+.lpc {
+  --lpc-cut: 24px;            /* coupe diagonale bas-droit */
+  --lpc-red-bright: #fc4949;  /* bord gauche / lignes vives */
+  --lpc-red-bar: #ff6058;     /* cœur de la barre droite */
+  --lpc-red-line: #e8433c;    /* ligne basse carte normale */
+  --lpc-red-deep: #b21817;    /* fond du médaillon */
+  --lpc-title: #d4413a;       /* titre au-dessus */
+  --lpc-text: #ff5b53;        /* description dessous */
+  font-family: 'Rajdhani', system-ui, sans-serif;
+  position: relative;
+}
+
+/* ——— titre au-dessus de la carte ——— */
+.lpc-title {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--lpc-title);
+  margin: 0 0 6px 2px;
+  line-height: 1.1;
+}
+.lpc-unlocked .lpc-title { text-shadow: 0 0 10px rgba(212, 65, 58, 0.55); }
+
+/* ——— enveloppe de la carte ——— */
+.lpc-card {
+  position: relative;
+  aspect-ratio: 27 / 40;      /* proportions des cartes lifepath (375×555) */
+}
+/* halo rouge de la carte sélectionnée */
+.lpc-unlocked .lpc-card {
+  filter:
+    drop-shadow(0 0 7px rgba(252, 65, 65, 0.45))
+    drop-shadow(0 0 22px rgba(252, 65, 65, 0.25));
+}
+
+/* ——— cadre : couche colorée découpée, bordures inégales par côté ——— */
+.lpc-frame {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(
+    0 0, 100% 0,
+    100% calc(100% - var(--lpc-cut)),
+    calc(100% - var(--lpc-cut)) 100%,
+    0 100%
+  );
+}
+/* carte normale : flancs sombres qui montent du bas, ligne basse vive */
+.lpc-locked .lpc-frame {
+  background:
+    linear-gradient(to top, rgba(178, 24, 23, 0.85), rgba(178, 24, 23, 0.35) 40%, rgba(120, 23, 24, 0.12) 75%, transparent);
+}
+/* carte débloquée : rouge vif plein (les bordures) */
+.lpc-unlocked .lpc-frame {
+  background: linear-gradient(105deg, var(--lpc-red-bright), #e03434 60%, var(--lpc-red-bar));
+}
+
+/* ——— corps (la zone image), découpé pareil, en retrait des bordures ——— */
+.lpc-body {
+  position: absolute;
+  overflow: hidden;
+  background:
+    radial-gradient(rgba(94, 242, 255, 0.05) 1px, transparent 1.3px),
+    linear-gradient(160deg, #131a21, #0b1016 55%, #0d1219);
+  background-size: 12px 12px, cover;
+  clip-path: polygon(
+    0 0, 100% 0,
+    100% calc(100% - var(--lpc-cut)),
+    calc(100% - var(--lpc-cut)) 100%,
+    0 100%
+  );
+}
+/* normale : 1 px de flanc, 2 px en bas, pas de bord haut */
+.lpc-locked .lpc-body { inset: 0 1px 2px 1px; }
+/* débloquée : gauche 6 px, haut 2 px, bas 4 px, droite 2 px (la barre vient par-dessus) */
+.lpc-unlocked .lpc-body { inset: 2px 2px 4px 6px; }
+
+/* ——— barre rouge droite (carte débloquée) ——— */
+.lpc-bar {
+  position: absolute;
+  top: -6px;                  /* dépasse le haut de la carte */
+  right: 0;
+  bottom: calc(var(--lpc-cut) - 4px);
+  width: 20px;
+  background:
+    linear-gradient(90deg, #fc4141, var(--lpc-red-bar) 30%, var(--lpc-red-bar) 78%, #f94743);
+  /* extrémité basse en biseau qui rejoint la coupe diagonale */
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 2px), 0 100%);
+  box-shadow: 0 0 12px rgba(255, 96, 88, 0.55);
+}
+
+/* ——— médaillon vertical bas-centre (carte normale) ——— */
+.lpc-tick {
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 48px;
+  background: var(--lpc-red-deep);
+  border: 2px solid var(--lpc-red-line);
+  box-sizing: border-box;
+}
+
+/* ——— contenu placeholder (image plus tard) ——— */
+.lpc-art {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  text-align: center;
+}
+.lpc-art .ico { font-size: 44px; line-height: 1; }
+/* image pleine carte (remplace le placeholder) */
+.lpc-art img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.lpc-art img + .hint {
+  position: absolute;
+  left: 50%;
+  bottom: 54px;
+  transform: translateX(-50%);
+  z-index: 1;
+  padding: 4px 7px;
+  background: rgba(5, 10, 14, 0.82);
+  border: 1px solid rgba(255, 91, 83, 0.4);
+  white-space: nowrap;
+}
+.lpc-locked .lpc-art img { filter: grayscale(0.85) brightness(0.5); }
+.lpc-locked .lpc-art .ico { filter: grayscale(1) brightness(0.55); opacity: 0.55; }
+.lpc-art .hint {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(255, 91, 83, 0.4);
+}
+
+/* progression (carte verrouillée) : fine barre + compteur, dans le bas de la carte */
+.lpc-progress {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 12px;
+}
+.lpc-progress .track {
+  height: 3px;
+  background: rgba(232, 67, 60, 0.22);
+}
+.lpc-progress .fill {
+  height: 100%;
+  background: var(--lpc-red-line);
+  box-shadow: 0 0 6px rgba(232, 67, 60, 0.7);
+  transition: width 0.4s ease-out;
+}
+.lpc-progress .count {
+  margin-top: 4px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: rgba(255, 91, 83, 0.75);
+  text-align: right;
+}
+
+/* ——— curseur cyan (survol, comme dans le jeu) ——— */
+.lpc-cursor {
+  position: absolute;
+  left: 12px;
+  bottom: 34px;
+  width: 26px;
+  height: 26px;
+  border: 2px solid #33f7fc;
+  box-shadow: 0 0 10px rgba(51, 247, 252, 0.55);
+  background: repeating-linear-gradient(45deg, rgba(51, 247, 252, 0.3) 0 2px, transparent 2px 4px);
+  opacity: 0;
+  transition: opacity 0.12s;
+  pointer-events: none;
+}
+.lpc-cursor::after {
+  content: '';
+  position: absolute;
+  inset: 8px 5px;
+  background: #33f7fc;
+}
+.lpc:hover .lpc-cursor { opacity: 1; }
+
+/* ——— description sous la carte (débloquée = saumon ; sinon éteinte) ——— */
+.lpc-desc {
+  margin-top: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--lpc-text);
+}
+.lpc-unlocked .lpc-desc { text-shadow: 0 0 8px rgba(255, 91, 83, 0.3); }
+.lpc-locked .lpc-desc { color: rgba(255, 91, 83, 0.45); }

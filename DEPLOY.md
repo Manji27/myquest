@@ -1,16 +1,21 @@
 # Mettre QuestLog en ligne (et sur ton téléphone)
 
 L'app est une PWA statique : le dossier `dist/` (généré par `npm run build`) suffit.
-Choisis **une** des deux méthodes ci-dessous.
+La cible recommandée est Cloudflare Pages.
 
-## Option 1 — Netlify Drop (le plus simple, sans compte CLI)
+## Option recommandée — Cloudflare Pages
 
-1. `npm run build` (génère `dist/`)
-2. Va sur **https://app.netlify.com/drop**
-3. Glisse-dépose le dossier `dist/` dans la page
-4. Netlify te donne une URL publique (ex. `https://questlog-xyz.netlify.app`)
+1. Pousse le dépôt sur un dépôt Git privé.
+2. Dans Cloudflare → **Workers & Pages** → **Create** → **Pages**.
+3. Connecte le dépôt et utilise :
+   - commande de build : `npm run build`
+   - dossier de sortie : `dist`
+4. Ajoute les variables `VITE_NEON_AUTH_URL` et `VITE_NEON_DATA_API_URL`.
+5. Déploie, puis ouvre l'URL générée sur tes appareils.
 
-## Option 2 — Vercel (CLI, déploiements en une commande)
+## Alternatives
+
+Netlify et Vercel restent compatibles. Pour Vercel :
 
 ```bash
 npm i -g vercel      # une seule fois
@@ -31,12 +36,20 @@ Une fois l'URL ouverte sur ton mobile :
 
 L'app s'ouvre alors en plein écran comme une vraie application, et fonctionne hors-ligne.
 
-## ⚠️ Important : tes données
+## Synchronisation des données
 
-Chaque appareil/navigateur a **son propre stockage local** — les données ne se
-synchronisent pas automatiquement entre desktop et mobile. Pour transférer :
+Sans les variables Neon, chaque navigateur conserve uniquement sa copie locale.
+Une fois Neon configuré selon `NEON.md`, connecte-toi avec le même email sur le
+téléphone et le PC : les changements se synchronisent automatiquement.
 
-1. Onglet **Progression → Exporter ma sauvegarde** (télécharge un `.json`)
-2. Sur l'autre appareil : **Progression → Importer une sauvegarde**
+L'export/import JSON reste disponible pour une récupération manuelle. La sauvegarde
+automatique hors site dans Cloudflare R2 sera ajoutée après la création du bucket et
+des secrets Cloudflare ; aucune clé privée R2 ne doit être placée dans les variables
+`VITE_*`, car celles-ci sont publiques dans le navigateur.
 
-Pense à exporter régulièrement pour ne rien perdre.
+## Ordre de mise en production
+
+1. Créer Neon Auth + Data API et exécuter `neon/schema.sql`.
+2. Tester le même compte sur deux navigateurs.
+3. Déployer la PWA sur Cloudflare Pages.
+4. Créer le bucket R2 privé et brancher la sauvegarde planifiée côté Worker.

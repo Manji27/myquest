@@ -22,14 +22,44 @@ export type DayLog = {
   mood?: number
 }
 
+export type ContractStep = {
+  id: string
+  label: string
+  completed: boolean
+}
+
+export type MonthlyContract = {
+  id: string
+  /** Mois concerné au format YYYY-MM. */
+  month: string
+  title: string
+  description: string
+  steps: ContractStep[]
+  completedAt?: string
+}
+
+export type ContractState = {
+  monthly: MonthlyContract[]
+}
+
 export type AppState = {
   quests: QuestDef[]
   logs: Record<string, DayLog> // clé = date
   version: number
+  /** Missions personnelles exigeantes, séparées des succès automatiques. */
+  contracts?: ContractState
   /** ids des succès déjà notifiés (pour ne pas re-notifier) */
   seenAchievements?: string[]
   /** horodatage (ms) de la dernière modification — sert à la synchro cloud */
   updatedAt?: number
+  /**
+   * Horloges de synchronisation par champ.
+   * Elles permettent de propager aussi les suppressions/décochages sans confondre
+   * une absence volontaire avec une donnée ancienne.
+   */
+  sync?: {
+    clocks: Record<string, string>
+  }
   /** préférences (rappel quotidien) */
   settings?: {
     reminderEnabled?: boolean
