@@ -13,8 +13,11 @@
     "run_worker_first": true
   },
   "vars": {
+    "ACCESS_ALLOWED_EMAIL": "marcus.mendy27@gmail.com",
     "NEON_AUTH_URL": "https://ep-crimson-wind-asq8wxgt.neonauth.c-4.eu-central-1.aws.neon.tech/neondb/auth",
-    "NEON_DATA_API_URL": "https://ep-crimson-wind-asq8wxgt.apirest.c-4.eu-central-1.aws.neon.tech/neondb/rest/v1"
+    "NEON_DATA_API_URL": "https://ep-crimson-wind-asq8wxgt.apirest.c-4.eu-central-1.aws.neon.tech/neondb/rest/v1",
+    "POLICY_AUD": "4681e5474a1c3d089d1c8b83a32d93a1bb57609293ebfcc750f3d1f2d47a276f,93461e0654311206d97731b88408c6c3db73d176501414fedb68fe0a94b62633",
+    "TEAM_DOMAIN": "https://marcus-mendy27.cloudflareaccess.com"
   },
   "durable_objects": {
     "bindings": [

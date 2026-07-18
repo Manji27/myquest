@@ -2,6 +2,7 @@ import {
   buildPushPayload,
   type PushSubscription,
 } from '@block65/webcrypto-web-push'
+import { createRemoteJWKSet, jwtVerify } from 'jose'
 
 type ReminderConfig = {
   subscription: PushSubscription
@@ -32,6 +33,9 @@ type Env = {
   SECURITY_GATE: DurableNamespace
   NEON_AUTH_URL: string
   NEON_DATA_API_URL: string
+  ACCESS_ALLOWED_EMAIL: string
+  POLICY_AUD: string
+  TEAM_DOMAIN: string
   ALLOWED_AUTH_EMAILS?: string
   VAPID_PUBLIC_KEY: string
   VAPID_PRIVATE_KEY: string
@@ -45,6 +49,9 @@ const JSON_HEADERS = {
 const TIME_PATTERN = /^(?:[01]\d|2[0-3]):[0-5]\d$/
 const BASE64URL_PATTERN = /^[A-Za-z0-9_-]+$/
 const MAX_BODY_BYTES = 8_192
+const ACCESS_JWKS = createRemoteJWKSet(
+  new URL('https://marcus-mendy27.cloudflareaccess.com/cdn-cgi/access/certs'),
+)
 const SECURITY_HEADERS: Record<string, string> = {
   'Content-Security-Policy': [
     "default-src 'self'",
@@ -206,6 +213,31 @@ function withSecurityHeaders(response: Response): Response {
   return secured
 }
 
+async function hasValidAccessIdentity(request: Request, env: Env): Promise<boolean> {
+  const hostname = new URL(request.url).hostname
+  if (hostname === 'localhost' || hostname === '127.0.0.1') return true
+
+  const token = request.headers.get('Cf-Access-Jwt-Assertion')
+  const audiences = env.POLICY_AUD.split(',').map((value) => value.trim()).filter(Boolean)
+  if (!token || audiences.length === 0 || !env.TEAM_DOMAIN || !env.ACCESS_ALLOWED_EMAIL) {
+    return false
+  }
+
+  try {
+    const { payload } = await jwtVerify(token, ACCESS_JWKS, {
+      algorithms: ['RS256'],
+      audience: audiences,
+      issuer: env.TEAM_DOMAIN,
+    })
+    return (
+      typeof payload.email === 'string' &&
+      payload.email.toLowerCase() === env.ACCESS_ALLOWED_EMAIL.toLowerCase()
+    )
+  } catch {
+    return false
+  }
+}
+
 export class SecurityGate {
   constructor(private readonly state: DurableState) {}
 
@@ -344,6 +376,10 @@ async function handleReminder(request: Request, env: Env): Promise<Response> {
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
+    if (!(await hasValidAccessIdentity(request, env))) {
+      return withSecurityHeaders(json({ error: 'Access denied' }, 403))
+    }
+
     const url = new URL(request.url)
     if (url.pathname.startsWith('/api/reminders')) {
       return withSecurityHeaders(await handleReminder(request, env))
