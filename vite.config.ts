@@ -16,9 +16,9 @@ export default defineConfig({
     manifest: {
       name: 'QuestLog — Journal & Quêtes',
       short_name: 'QuestLog',
-      description: 'Ton journal gamifié : accomplis tes quêtes du jour et fais grimper ta courbe.',
-      theme_color: '#0b1020',
-      background_color: '#0b1020',
+      description: 'Ton journal cyberpunk gamifié : accomplis tes quêtes et développe ta progression.',
+      theme_color: '#060e13',
+      background_color: '#060e13',
       display: 'standalone',
       orientation: 'portrait',
       start_url: '/',

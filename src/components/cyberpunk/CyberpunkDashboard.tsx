@@ -21,7 +21,7 @@ import './cyberpunk.css'
  * Tech-noir Night City : rouge par défaut, cyan actif, jaune acide,
  * coins coupés, curseur cyan, annotations mono partout.
  * Design system : references/cyberpunk-ui/DESIGN-SYSTEM.md
- * Accessible via ?cyberpunk — n'altère pas l'app principale.
+ * Expérience principale de QuestLog.
  */
 export function CyberpunkDashboard() {
   const rootRef = useRef<HTMLDivElement>(null)
@@ -325,7 +325,7 @@ export function CyberpunkDashboard() {
         </div>
 
         <p className="cp-note" style={{ textAlign: 'center' }}>
-          NC 4884 0252 5584 0415 · maquette alternative · style Cyberpunk 2077
+          NC 4884 0252 5584 0415 · interface principale · protocole QuestLog
         </p>
           </>
         )}

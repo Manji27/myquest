@@ -7,15 +7,16 @@ import { P3RDashboard } from './components/p3r/P3RDashboard'
 import { PragmataDashboard } from './components/pragmata/PragmataDashboard'
 import { CyberpunkDashboard } from './components/cyberpunk/CyberpunkDashboard'
 
-// Maquettes alternatives, accessibles via ?ffx, ?p3, ?pragmata ou ?cyberpunk (n'altèrent pas l'app)
+// Cyberpunk est l'expérience principale. Les anciennes directions artistiques
+// restent accessibles explicitement pour comparaison et maintenance.
 const params = new URLSearchParams(window.location.search)
 
 function Root() {
   if (params.has('ffx')) return <FFXDashboard />
   if (params.has('p3')) return <P3RDashboard />
   if (params.has('pragmata')) return <PragmataDashboard />
-  if (params.has('cyberpunk')) return <CyberpunkDashboard />
-  return <App />
+  if (params.has('classic')) return <App />
+  return <CyberpunkDashboard />
 }
 
 createRoot(document.getElementById('root')!).render(
