@@ -1,13 +1,33 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "myquest",
+  "main": "./worker/index.ts",
   "compatibility_date": "2026-07-18",
   "observability": {
     "enabled": true
   },
   "assets": {
-    "not_found_handling": "single-page-application"
+    "not_found_handling": "single-page-application",
+    "run_worker_first": [
+      "/api/*"
+    ]
   },
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "REMINDERS",
+        "class_name": "ReminderAlarm"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": [
+        "ReminderAlarm"
+      ]
+    }
+  ],
   "compatibility_flags": [
     "nodejs_compat"
   ]

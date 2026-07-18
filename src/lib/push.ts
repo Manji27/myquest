@@ -43,12 +43,48 @@ export async function enablePush(uid: string): Promise<{ ok: boolean; reason?: s
   return { ok: true }
 }
 
+type ReminderSchedule = { time: string; timezone: string }
+
+async function currentSubscription(): Promise<PushSubscription | null> {
+  const reg = await navigator.serviceWorker.ready
+  return reg.pushManager.getSubscription()
+}
+
+async function callReminderApi(path: string, method: 'POST' | 'DELETE', schedule: ReminderSchedule) {
+  const subscription = await currentSubscription()
+  if (!subscription) throw new Error("L'abonnement aux notifications est introuvable.")
+  const response = await fetch(path, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      subscription: subscription.toJSON(),
+      time: schedule.time,
+      timezone: schedule.timezone,
+    }),
+  })
+  if (!response.ok) {
+    const data = await response.json().catch(() => null) as { error?: string } | null
+    throw new Error(data?.error ?? `Erreur notifications (${response.status})`)
+  }
+}
+
+/** Programme ou déplace le rappel quotidien de cet appareil. */
+export async function schedulePush(time: string, timezone: string): Promise<void> {
+  await callReminderApi('/api/reminders', 'POST', { time, timezone })
+}
+
+/** Envoie immédiatement une notification de contrôle. */
+export async function testPush(time: string, timezone: string): Promise<void> {
+  await callReminderApi('/api/reminders/test', 'POST', { time, timezone })
+}
+
 /** Désactive les notifications sur cet appareil. */
-export async function disablePush(): Promise<void> {
+export async function disablePush(time = '20:00', timezone = localTimezone()): Promise<void> {
   if (!pushSupported) return
   const reg = await navigator.serviceWorker.getRegistration()
   const sub = await reg?.pushManager.getSubscription()
   if (sub) {
+    await callReminderApi('/api/reminders', 'DELETE', { time, timezone })
     await removeSubscription(sub.endpoint)
     await sub.unsubscribe()
   }

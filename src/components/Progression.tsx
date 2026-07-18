@@ -5,7 +5,15 @@ import { ACHIEVEMENTS, isUnlocked } from '../lib/achievements'
 import { LifepathCard } from './LifepathCard'
 import { downloadBackup, parseBackup } from '../lib/backup'
 import type { CloudSync } from '../lib/useCloudSync'
-import { disablePush, enablePush, isPushEnabled, localTimezone, pushSupported } from '../lib/push'
+import {
+  disablePush,
+  enablePush,
+  isPushEnabled,
+  localTimezone,
+  pushSupported,
+  schedulePush,
+  testPush,
+} from '../lib/push'
 import { Heatmap } from './Heatmap'
 import { WeeklySummary } from './WeeklySummary'
 import { CYBERPUNK_ACHIEVEMENT_ART } from './cyberpunk/achievementArt'
@@ -238,13 +246,23 @@ function ReminderCard({
     setDraftTime(time)
   }, [time])
 
-  function saveTime() {
-    setState((s) => ({
-      ...s,
-      settings: { ...s.settings, reminderTime: draftTime, tz: localTimezone() },
-    }))
-    setTimeSaved(true)
-    setTimeout(() => setTimeSaved(false), 2500)
+  async function saveTime() {
+    setBusy(true)
+    setErr(null)
+    const timezone = localTimezone()
+    try {
+      if (deviceOn) await schedulePush(draftTime, timezone)
+      setState((s) => ({
+        ...s,
+        settings: { ...s.settings, reminderTime: draftTime, tz: timezone },
+      }))
+      setTimeSaved(true)
+      setTimeout(() => setTimeSaved(false), 2500)
+    } catch (e) {
+      setErr((e as Error)?.message ?? 'Erreur')
+    } finally {
+      setBusy(false)
+    }
   }
 
   if (!pushSupported) {
@@ -279,7 +297,7 @@ function ReminderCard({
     setErr(null)
     try {
       if (deviceOn) {
-        await disablePush()
+        await disablePush(time, localTimezone())
         setDeviceOn(false)
         setState((s) => ({ ...s, settings: { ...s.settings, reminderEnabled: false } }))
       } else {
@@ -289,6 +307,7 @@ function ReminderCard({
           setBusy(false)
           return
         }
+        await schedulePush(time, localTimezone())
         setDeviceOn(true)
         setState((s) => ({
           ...s,
@@ -301,6 +320,20 @@ function ReminderCard({
     setBusy(false)
   }
 
+  async function sendTest() {
+    setBusy(true)
+    setErr(null)
+    try {
+      await testPush(time, localTimezone())
+      setTimeSaved(true)
+      setTimeout(() => setTimeSaved(false), 2500)
+    } catch (e) {
+      setErr((e as Error)?.message ?? 'Erreur')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <section className="glass rounded-2xl p-4">
       <div className="flex items-center justify-between gap-3">
@@ -310,7 +343,7 @@ function ReminderCard({
             <span>Rappel quotidien</span>
           </h3>
           <p className="text-xs text-slate-400">
-            {deviceOn ? 'Rappel envoyé si tes quêtes du jour ne sont pas toutes accomplies.' : 'Active une notification pour ne pas casser ta série.'}
+            {deviceOn ? 'Notification quotidienne programmée sur cet appareil.' : 'Active une notification pour ne pas oublier tes quêtes.'}
           </p>
         </div>
         <button
@@ -336,7 +369,7 @@ function ReminderCard({
               />
               <button
                 onClick={saveTime}
-                disabled={!timeDirty}
+                disabled={!timeDirty || busy}
                 className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition active:scale-[0.97] ${
                   timeDirty
                     ? 'bg-gradient-to-r from-indigo-500 to-fuchsia-500 text-white'
@@ -344,6 +377,13 @@ function ReminderCard({
                 }`}
               >
                 Valider
+              </button>
+              <button
+                onClick={sendTest}
+                disabled={busy || timeDirty}
+                className="rounded-lg border border-cyan-400/40 px-3 py-1.5 text-sm font-semibold text-cyan-300 transition hover:bg-cyan-400/10 disabled:opacity-40"
+              >
+                Tester
               </button>
             </div>
           </div>
