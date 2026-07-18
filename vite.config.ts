@@ -12,7 +12,17 @@ export default defineConfig({
     registerType: 'autoUpdate',
     includeAssets: ['favicon.svg', 'push-handler.js'],
     // importe le handler de notifications push dans le service worker généré
-    workbox: { importScripts: ['push-handler.js'] },
+    workbox: {
+      importScripts: ['push-handler.js'],
+      // L'application installée doit embarquer ses visuels. Sans ces motifs,
+      // Workbox ne précachait que le JS/CSS/HTML et les icônes dépendaient
+      // d'une requête réseau à chaque ouverture de la PWA.
+      globPatterns: [
+        '**/*.{js,css,html,svg}',
+        'assets/**/*.{png,webp,wav}',
+      ],
+      cleanupOutdatedCaches: true,
+    },
     manifest: {
       name: 'QuestLog — Journal & Quêtes',
       short_name: 'QuestLog',
