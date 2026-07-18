@@ -48,6 +48,16 @@ export async function getCurrentCloudUser(): Promise<CloudUser | null> {
     : null
 }
 
+/** Jeton court terme transmis uniquement au Worker pour authentifier les API privées. */
+export async function getCloudAccessToken(): Promise<string> {
+  if (!client) throw new Error('Cloud non configuré')
+  const { data, error } = await client.auth.getSession({ forceFetch: true })
+  if (error) throw error
+  const token = data.session?.access_token
+  if (!token) throw new Error('Session expirée. Reconnecte-toi pour continuer.')
+  return token
+}
+
 /**
  * Envoie un code de connexion par email (« magic link » Neon = code à saisir).
  * L'utilisateur reçoit un code qu'il valide ensuite via `verifyCode`.

@@ -7,16 +7,23 @@
     "enabled": true
   },
   "assets": {
+    "binding": "ASSETS",
     "not_found_handling": "single-page-application",
-    "run_worker_first": [
-      "/api/*"
-    ]
+    "run_worker_first": true
+  },
+  "vars": {
+    "NEON_AUTH_URL": "https://ep-crimson-wind-asq8wxgt.neonauth.c-4.eu-central-1.aws.neon.tech/neondb/auth",
+    "NEON_DATA_API_URL": "https://ep-crimson-wind-asq8wxgt.apirest.c-4.eu-central-1.aws.neon.tech/neondb/rest/v1"
   },
   "durable_objects": {
     "bindings": [
       {
         "name": "REMINDERS",
         "class_name": "ReminderAlarm"
+      },
+      {
+        "name": "SECURITY_GATE",
+        "class_name": "SecurityGate"
       }
     ]
   },
@@ -25,6 +32,12 @@
       "tag": "v1",
       "new_sqlite_classes": [
         "ReminderAlarm"
+      ]
+    },
+    {
+      "tag": "v2",
+      "new_sqlite_classes": [
+        "SecurityGate"
       ]
     }
   ],

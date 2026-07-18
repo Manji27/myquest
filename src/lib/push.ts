@@ -1,4 +1,4 @@
-import { removeSubscription, saveSubscription } from './cloud'
+import { getCloudAccessToken, removeSubscription, saveSubscription } from './cloud'
 
 const VAPID = import.meta.env.VITE_VAPID_PUBLIC as string | undefined
 
@@ -53,9 +53,13 @@ async function currentSubscription(): Promise<PushSubscription | null> {
 async function callReminderApi(path: string, method: 'POST' | 'DELETE', schedule: ReminderSchedule) {
   const subscription = await currentSubscription()
   if (!subscription) throw new Error("L'abonnement aux notifications est introuvable.")
+  const accessToken = await getCloudAccessToken()
   const response = await fetch(path, {
     method,
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify({
       subscription: subscription.toJSON(),
       time: schedule.time,

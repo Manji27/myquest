@@ -15,6 +15,11 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
+  "overrides": {
+    "@better-auth/core": "1.6.23",
+    "@better-auth/passkey": "1.6.23",
+    "better-auth": "1.6.23"
+  },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.45.1",
     "@tailwindcss/vite": "^4.0.0",
