@@ -1,0 +1,148 @@
+/* ——— Style Persona 3 Reload (scopé sous .p3-root) ———
+   Bleu électrique, diagonales, typo géante inclinée, accents jaunes.
+   Surcharge les règles pixel globales. */
+
+.p3-root {
+  --p3-navy: #06092e;
+  --p3-night: #0a1432;
+  --p3-cobalt: #0a1d9b;
+  --p3-elec: #0619e6;
+  --p3-royal: #1554a5;
+  --p3-cyan: #31a5f7;
+  --p3-ice: #abd5f6;
+  --p3-white: #f9fbfc;
+  --p3-yellow: #faee45;
+  --p3-red: #fb0101;
+
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  font-family: 'Arial Narrow', 'Roboto Condensed', 'Helvetica Neue', system-ui, sans-serif !important;
+  color: var(--p3-white);
+}
+.p3-root * { font-family: inherit !important; }
+
+/* fond split diagonal */
+.p3-bg {
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    linear-gradient(135deg, transparent 62%, rgba(250,238,69,0.10) 62%, rgba(250,238,69,0.10) 66%, transparent 66%),
+    linear-gradient(118deg, transparent 70%, rgba(49,165,247,0.18) 70%),
+    linear-gradient(200deg, #0a1d9b 0%, #0619e6 42%, #0a1432 100%);
+}
+/* lignes de vitesse subtiles */
+.p3-speedlines {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.05;
+  background: repeating-linear-gradient(118deg, #fff 0 1px, transparent 1px 40px);
+}
+
+.p3-page { position: relative; z-index: 1; max-width: 1180px; margin: 0 auto; padding: 20px 18px 40px; }
+
+/* ——— En-tête ——— */
+.p3-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+.p3-date { font-size: 12px; color: var(--p3-cyan); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
+.p3-title {
+  margin: 0; font-size: 44px; line-height: 0.9; font-weight: 900; font-style: italic;
+  letter-spacing: 1px; transform: skewX(-8deg); color: var(--p3-white);
+  text-shadow: 3px 3px 0 rgba(0,0,0,0.45);
+}
+.p3-title-accent { color: var(--p3-yellow); }
+.p3-headright { display: flex; align-items: center; gap: 12px; }
+.p3-streak {
+  transform: skewX(-8deg); background: var(--p3-yellow); color: var(--p3-navy);
+  padding: 4px 14px; display: flex; flex-direction: column; align-items: center; line-height: 1;
+  box-shadow: 3px 3px 0 rgba(0,0,0,0.35);
+}
+.p3-streak span { font-size: 22px; font-weight: 900; font-style: italic; }
+.p3-streak small { font-size: 8px; font-weight: 700; letter-spacing: 1px; }
+.p3-gear {
+  width: 40px; height: 40px; transform: skewX(-8deg); background: rgba(255,255,255,0.12);
+  color: #fff; font-size: 18px; cursor: pointer; border: 2px solid var(--p3-cyan);
+}
+
+/* ——— Barre de niveau ——— */
+.p3-level { display: flex; align-items: center; gap: 12px; transform: skewX(-8deg); margin-bottom: 16px; }
+.p3-level-num { background: var(--p3-cyan); color: var(--p3-navy); padding: 6px 12px; font-weight: 900; font-style: italic; box-shadow: 2px 2px 0 rgba(0,0,0,0.35); }
+.p3-level-num b { font-size: 20px; margin-left: 3px; }
+.p3-level-track { flex: 1; height: 14px; background: rgba(0,0,0,0.4); overflow: hidden; border-top: 1px solid rgba(255,255,255,0.2); }
+.p3-level-fill { height: 100%; background: linear-gradient(90deg, var(--p3-yellow), #ffd400); box-shadow: 0 0 12px rgba(250,238,69,0.7); }
+.p3-level-xp { font-weight: 900; font-style: italic; font-size: 16px; }
+.p3-level-xp span { font-size: 11px; color: var(--p3-ice); font-weight: 700; }
+
+/* ——— Onglets ——— */
+.p3-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+.p3-tab {
+  transform: skewX(-8deg); padding: 9px 20px; cursor: pointer; background: rgba(10,20,50,0.6);
+  border-bottom: 3px solid var(--p3-cyan); color: var(--p3-ice); font-weight: 800; font-style: italic;
+}
+.p3-tab span { display: inline-block; transform: skewX(8deg); letter-spacing: 1px; }
+.p3-tab-active { background: var(--p3-yellow); color: var(--p3-navy); border-bottom-color: #fff; box-shadow: 3px 3px 0 rgba(0,0,0,0.3); }
+
+/* ——— Navigation date ——— */
+.p3-daynav { display: flex; align-items: center; gap: 10px; transform: skewX(-8deg); background: rgba(10,20,50,0.5); border-left: 4px solid var(--p3-yellow); padding: 8px 14px; margin-bottom: 18px; }
+.p3-daynav > * { transform: skewX(8deg); }
+.p3-daynav-center { flex: 1; text-align: center; }
+.p3-daynav-tag { display: block; font-size: 10px; letter-spacing: 2px; color: var(--p3-yellow); font-weight: 800; }
+.p3-daynav-center b { text-transform: uppercase; font-style: italic; letter-spacing: 1px; }
+.p3-chevron { font-size: 20px; font-weight: 900; font-style: italic; color: var(--p3-cyan); cursor: pointer; background: none; }
+.p3-chevron-dim { color: rgba(255,255,255,0.3); }
+
+/* ——— Grille ——— */
+.p3-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+@media (min-width: 900px) { .p3-grid { grid-template-columns: 1fr 1fr; align-items: start; } }
+.p3-col { display: flex; flex-direction: column; gap: 16px; }
+
+/* ——— Puissance du jour (chiffre géant) ——— */
+.p3-power { position: relative; overflow: hidden; background: linear-gradient(115deg, var(--p3-cobalt), var(--p3-night)); border-left: 5px solid var(--p3-yellow); padding: 18px 20px; }
+.p3-power-ghost {
+  position: absolute; right: -10px; top: -40px; font-size: 200px; font-weight: 900; font-style: italic;
+  color: rgba(255,255,255,0.07); line-height: 1; pointer-events: none; transform: skewX(-8deg);
+}
+.p3-power-main { position: relative; z-index: 1; }
+.p3-power-score { font-size: 54px; font-weight: 900; font-style: italic; line-height: 1; color: var(--p3-white); text-shadow: 3px 3px 0 rgba(0,0,0,0.4); }
+.p3-power-score small { font-size: 16px; color: var(--p3-ice); margin-left: 6px; }
+.p3-power-title { font-size: 22px; font-weight: 900; font-style: italic; color: var(--p3-yellow); letter-spacing: 1px; margin-top: 2px; }
+.p3-power-bar { height: 10px; background: rgba(0,0,0,0.4); margin: 10px 0 8px; transform: skewX(-8deg); overflow: hidden; }
+.p3-power-bar > div { height: 100%; background: linear-gradient(90deg, var(--p3-cyan), var(--p3-yellow)); }
+.p3-power-sub { font-size: 13px; color: var(--p3-ice); font-weight: 700; }
+.p3-power-sub b { color: #fff; font-size: 16px; font-style: italic; }
+
+/* ——— Titre de section ——— */
+.p3-section { font-size: 15px; font-weight: 900; font-style: italic; letter-spacing: 2px; color: #fff; margin: 4px 0; transform: skewX(-8deg); }
+
+/* ——— Quêtes (lignes inclinées) ——— */
+.p3-quests { display: grid; grid-template-columns: 1fr; gap: 8px; }
+@media (min-width: 480px) { .p3-quests { grid-template-columns: 1fr 1fr; } }
+.p3-quest { transform: skewX(-8deg); background: linear-gradient(90deg, rgba(21,84,165,0.85), rgba(10,20,50,0.6)); border-left: 4px solid var(--p3-cyan); transition: transform 0.12s; }
+.p3-quest-in { transform: skewX(8deg); display: flex; align-items: center; gap: 10px; padding: 9px 13px; }
+.p3-quest-done { background: linear-gradient(90deg, var(--p3-yellow), #ffd400); border-left-color: #fff; box-shadow: 3px 3px 0 rgba(0,0,0,0.25); }
+.p3-quest-done .p3-quest-label, .p3-quest-done .p3-quest-meta { color: var(--p3-navy); }
+.p3-quest-icon { font-size: 22px; width: 30px; text-align: center; }
+.p3-quest-body { flex: 1; min-width: 0; }
+.p3-quest-label { font-weight: 800; font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
+.p3-quest-meta { font-size: 11px; color: var(--p3-ice); font-weight: 700; }
+.p3-quest-check { width: 24px; height: 24px; display: grid; place-items: center; font-weight: 900; color: var(--p3-navy); border: 2px solid rgba(255,255,255,0.4); }
+.p3-quest-done .p3-quest-check { background: var(--p3-navy); color: var(--p3-yellow); border-color: var(--p3-navy); }
+
+/* ——— Panneaux droite ——— */
+.p3-panel { background: linear-gradient(160deg, rgba(10,29,155,0.5), rgba(10,20,50,0.65)); border-top: 3px solid var(--p3-cyan); padding: 14px 16px; }
+.p3-panel-head { display: flex; justify-content: space-between; align-items: baseline; font-weight: 900; font-style: italic; letter-spacing: 1px; margin-bottom: 8px; }
+.p3-panel-head small { font-size: 11px; color: var(--p3-ice); font-style: normal; letter-spacing: 1px; }
+.p3-ok { color: var(--p3-yellow) !important; }
+
+/* ——— Courbe ——— */
+.p3-curve { width: 100%; display: block; }
+.p3-curve-stats { display: flex; gap: 8px; margin-top: 8px; }
+.p3-statcell { flex: 1; text-align: center; transform: skewX(-8deg); background: rgba(0,0,0,0.3); padding: 8px 4px; }
+.p3-statcell > * { transform: skewX(8deg); }
+.p3-statcell-hot { background: var(--p3-yellow); }
+.p3-statcell-hot .p3-statval { color: var(--p3-navy); }
+.p3-statcell-hot .p3-statlabel { color: var(--p3-navy); }
+.p3-statval { font-size: 22px; font-weight: 900; font-style: italic; color: var(--p3-cyan); }
+.p3-statlabel { font-size: 9px; font-weight: 800; letter-spacing: 1px; color: var(--p3-ice); }
+
+/* ——— Boîte moment positif ——— */
+.p3-dialogue { min-height: 86px; padding: 12px; font-size: 14px; line-height: 1.5; background: rgba(0,0,0,0.3); border-left: 3px solid var(--p3-yellow); }
+.p3-dim { color: var(--p3-ice); opacity: 0.7; }
+
+.p3-foot { text-align: center; font-size: 10px; color: var(--p3-ice); opacity: 0.6; letter-spacing: 1px; margin-top: 24px; font-style: italic; }

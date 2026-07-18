@@ -1,0 +1,16 @@
+node_modules
+dist
+.playwright-mcp
+initial.png
+filled.png
+editor.png
+dev-dist
+*.local
+.env
+.env.*
+!.env.example
+.DS_Store
+/*.png
+
+# Références de design (captures de jeux sous copyright — usage local uniquement)
+references/

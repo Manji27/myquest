@@ -1,0 +1,653 @@
+/* ============================================================
+   PRAGMATA — maquette alternative (?pragmata)
+   Design system : references/pragmata-ui/DESIGN-SYSTEM.md
+   NASA-punk : navy dot-grid, sélection cobalt, chrome cyan,
+   objectifs orange, annotations mono, scanlines.
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
+
+.prg-root {
+  /* — palette — */
+  --prg-bg: #030608;
+  --prg-panel: #081226;
+  --prg-panel2: #0a1730;
+  --prg-line: rgba(59, 116, 217, 0.45);
+  --prg-chrome: #7fd4ff;
+  --prg-cobalt: #2456e8;
+  --prg-cobalt2: #2e6cf5;
+  --prg-cyan: #57c8ff;
+  --prg-cyan2: #7fe3ff;
+  --prg-text: #eef4fb;
+  --prg-dim: #7d90a6;
+  --prg-off: #46586c;
+  --prg-orange: #f5921b;
+  --prg-yellow: #ffd23e;
+  --prg-red: #e8353f;
+  --prg-magenta: #ff2e7e;
+  --prg-green: #2ee87c;
+
+  min-height: 100dvh;
+  background: var(--prg-bg);
+  color: var(--prg-text);
+  font-family: 'Rajdhani', system-ui, sans-serif;
+  font-size: 16px;
+  letter-spacing: 0.02em;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.prg-mono { font-family: 'Share Tech Mono', monospace; }
+
+/* neutralise les polices pixel globales de l'app (index.css) */
+.prg-root h1,
+.prg-root h2,
+.prg-root h3,
+.prg-root button {
+  font-family: 'Rajdhani', system-ui, sans-serif;
+  letter-spacing: inherit;
+  line-height: inherit;
+}
+
+/* ——— fond : étoiles + dot grid + scanlines ——— */
+.prg-root::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(1px 1px at 12% 22%, rgba(255,255,255,0.5), transparent 100%),
+    radial-gradient(1px 1px at 78% 9%, rgba(255,255,255,0.35), transparent 100%),
+    radial-gradient(1px 1px at 55% 64%, rgba(255,255,255,0.3), transparent 100%),
+    radial-gradient(1px 1px at 91% 51%, rgba(255,255,255,0.4), transparent 100%),
+    radial-gradient(1px 1px at 33% 87%, rgba(255,255,255,0.28), transparent 100%),
+    radial-gradient(ellipse 120% 60% at 50% -20%, rgba(36, 86, 232, 0.12), transparent 60%),
+    var(--prg-bg);
+  pointer-events: none;
+  z-index: 0;
+}
+.prg-root::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.025) 0px,
+    rgba(255, 255, 255, 0.025) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+  pointer-events: none;
+  z-index: 50;
+  mix-blend-mode: overlay;
+}
+
+.prg-page {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 14px 14px 90px;
+}
+
+/* ——— cadre écran (crochets bleus aux 4 coins, façon menu System) ——— */
+.prg-frame {
+  position: fixed;
+  inset: 6px;
+  pointer-events: none;
+  z-index: 40;
+}
+.prg-frame i {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(90, 150, 255, 0.5);
+}
+.prg-frame i:nth-child(1) { top: 0; left: 0; border-right: 0; border-bottom: 0; }
+.prg-frame i:nth-child(2) { top: 0; right: 0; border-left: 0; border-bottom: 0; }
+.prg-frame i:nth-child(3) { bottom: 0; left: 0; border-right: 0; border-top: 0; }
+.prg-frame i:nth-child(4) { bottom: 0; right: 0; border-left: 0; border-top: 0; }
+
+/* ——— annotations micro ——— */
+.prg-note {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(125, 144, 166, 0.55);
+}
+
+/* ═══════════ EN-TÊTE ═══════════ */
+.prg-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin: 6px 2px 16px;
+}
+.prg-title {
+  font-size: 34px;
+  font-weight: 500;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  line-height: 1.05;
+  color: #fff;
+  text-shadow:
+    0 0 12px rgba(87, 200, 255, 0.55),
+    0 0 32px rgba(36, 86, 232, 0.45);
+}
+.prg-title span { color: var(--prg-cyan2); }
+.prg-breadcrumb {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 3px;
+}
+
+/* chips ressources (liseré pointillé + valeur LCD) */
+.prg-chips { display: flex; gap: 8px; align-items: center; }
+.prg-chip {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: #0d0f13;
+  border: 1px dashed rgba(157, 180, 207, 0.4);
+  padding: 5px 10px 5px 8px;
+  min-width: 74px;
+}
+.prg-chip-icon { font-size: 13px; line-height: 1; }
+.prg-chip-val {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 15px;
+  color: #fff;
+  margin-left: auto;
+}
+.prg-chip-unit { font-size: 10px; color: var(--prg-dim); }
+
+/* ═══════════ ONGLETS (pause menu + glitch bars) ═══════════ */
+.prg-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 4px 0 18px;
+  border-bottom: 1px solid rgba(125, 144, 166, 0.18);
+  padding-bottom: 8px;
+}
+.prg-key {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  line-height: 1;
+  background: #fff;
+  color: #000;
+  font-weight: 700;
+  padding: 3px 5px;
+  border-radius: 1px;
+}
+.prg-tab {
+  position: relative;
+  background: none;
+  border: 0;
+  color: #5a6b80;
+  font: inherit;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  padding: 6px 16px;
+  cursor: pointer;
+}
+.prg-tab-active {
+  color: #fff;
+  text-shadow: 0 0 10px rgba(127, 227, 255, 0.8), 0 0 26px rgba(36, 86, 232, 0.7);
+}
+/* barres de pixels glitch au-dessus de l'onglet actif */
+.prg-tab-active::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: -14px;
+  width: 64px;
+  height: 12px;
+  background:
+    linear-gradient(90deg,
+      var(--prg-cobalt2) 0 8%, transparent 8% 12%,
+      var(--prg-cobalt) 12% 26%, transparent 26% 30%,
+      var(--prg-cobalt2) 30% 38%, transparent 38% 46%,
+      var(--prg-cobalt) 46% 70%, transparent 70% 76%,
+      var(--prg-cobalt2) 76% 88%, transparent 88% 100%);
+  opacity: 0.9;
+}
+
+/* ═══════════ BANNIÈRE OBJECTIF ═══════════ */
+.prg-objective {
+  text-align: center;
+  margin: 20px 0 18px;
+}
+.prg-objective-rule {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 6px;
+}
+.prg-objective-rule::before,
+.prg-objective-rule::after {
+  content: '';
+  height: 1px;
+  width: min(180px, 26vw);
+  background: rgba(255, 255, 255, 0.65);
+}
+.prg-diamond {
+  width: 15px;
+  height: 15px;
+  rotate: 45deg;
+  border: 2px solid var(--prg-orange);
+  display: inline-block;
+  position: relative;
+  box-shadow: 0 0 10px rgba(245, 146, 27, 0.6);
+}
+.prg-diamond::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  background: var(--prg-orange);
+}
+.prg-objective-text {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
+}
+.prg-objective-text .prg-chev { color: #cfd9e6; opacity: 0.8; letter-spacing: -0.12em; }
+
+/* ═══════════ PANNEAU (fenêtre OS : dot grid + chrome cyan) ═══════════ */
+.prg-panel {
+  position: relative;
+  border: 1px solid var(--prg-line);
+  background:
+    radial-gradient(rgba(87, 200, 255, 0.07) 1px, transparent 1.4px),
+    linear-gradient(160deg, rgba(10, 23, 48, 0.92), rgba(7, 14, 30, 0.96));
+  background-size: 13px 13px, cover;
+  padding: 14px;
+  margin-bottom: 16px;
+}
+/* filigrane X diagonal */
+.prg-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to bottom right, transparent calc(50% - 0.5px), rgba(120, 160, 230, 0.05) 50%, transparent calc(50% + 0.5px)),
+    linear-gradient(to bottom left, transparent calc(50% - 0.5px), rgba(120, 160, 230, 0.05) 50%, transparent calc(50% + 0.5px));
+  pointer-events: none;
+}
+/* chrome d'angle cyan */
+.prg-corner {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--prg-chrome);
+  opacity: 0.75;
+  pointer-events: none;
+}
+.prg-corner-tl { top: -1px; left: -1px; border-right: 0; border-bottom: 0; }
+.prg-corner-tr { top: -1px; right: -1px; border-left: 0; border-bottom: 0; }
+.prg-corner-bl { bottom: -1px; left: -1px; border-right: 0; border-top: 0; }
+.prg-corner-br { bottom: -1px; right: -1px; border-left: 0; border-top: 0; }
+.prg-panel-note-tl { position: absolute; top: 4px; left: 20px; }
+.prg-panel-note-br { position: absolute; bottom: 4px; right: 20px; }
+
+/* numéro fantôme géant */
+.prg-ghost {
+  position: absolute;
+  top: 2px;
+  right: 12px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 54px;
+  color: rgba(87, 200, 255, 0.07);
+  letter-spacing: 0.1em;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ═══════════ BARRES DE TITRE DE SECTION ═══════════ */
+.prg-secbar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #fff;
+  background: linear-gradient(90deg, var(--prg-cobalt), var(--prg-cobalt2) 70%, rgba(46, 108, 245, 0.55));
+}
+/* traîne de glitch à droite */
+.prg-secbar::after {
+  content: '';
+  position: absolute;
+  right: -14px;
+  top: 0;
+  bottom: 0;
+  width: 14px;
+  background:
+    linear-gradient(90deg, rgba(46, 108, 245, 0.55) 0 30%, transparent 30% 45%,
+      rgba(46, 108, 245, 0.35) 45% 70%, transparent 70% 100%);
+}
+.prg-secbar-red { background: linear-gradient(90deg, #b3252e, var(--prg-red) 70%, rgba(232, 53, 63, 0.5)); }
+.prg-secbar-red::after {
+  background: linear-gradient(90deg, rgba(232, 53, 63, 0.5) 0 30%, transparent 30% 45%,
+    rgba(232, 53, 63, 0.3) 45% 70%, transparent 70% 100%);
+}
+.prg-secbar-green { background: linear-gradient(90deg, #14602d, #1f7a3a 70%, rgba(31, 122, 58, 0.5)); }
+.prg-secbar-green::after {
+  background: linear-gradient(90deg, rgba(31, 122, 58, 0.5) 0 30%, transparent 30% 45%,
+    rgba(31, 122, 58, 0.3) 45% 70%, transparent 70% 100%);
+}
+
+/* ═══════════ LISTES DE QUÊTES (lignes numérotées) ═══════════ */
+.prg-rows { display: flex; flex-direction: column; gap: 7px; }
+.prg-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(10, 18, 31, 0.85);
+  border: 1px solid rgba(210, 226, 245, 0.28);
+  padding: 8px 12px 8px 10px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.prg-row:hover { border-color: rgba(210, 226, 245, 0.55); }
+/* tiret magenta « nouveau » à gauche */
+.prg-row::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 4px;
+  bottom: 4px;
+  width: 3px;
+  background: var(--prg-magenta);
+}
+.prg-row-num {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  color: var(--prg-dim);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
+}
+.prg-row-num::after { content: '⋮'; opacity: 0.4; font-size: 9px; }
+.prg-row-icon { font-size: 19px; width: 26px; text-align: center; filter: grayscale(0.25); }
+.prg-row-label { font-weight: 600; font-size: 16.5px; letter-spacing: 0.03em; }
+.prg-row-meta { display: flex; gap: 10px; font-size: 12.5px; margin-top: 1px; }
+.prg-row-xp { color: var(--prg-cyan); font-family: 'Share Tech Mono', monospace; font-size: 12px; }
+.prg-row-diff { color: var(--prg-dim); }
+.prg-row-check {
+  margin-left: auto;
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(210, 226, 245, 0.4);
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  color: transparent;
+  flex-shrink: 0;
+}
+
+/* — ligne accomplie : sélection cobalt + crochets blancs — */
+.prg-row-done {
+  background:
+    radial-gradient(rgba(255, 255, 255, 0.09) 1px, transparent 1.3px),
+    linear-gradient(90deg, #2e63f0, var(--prg-cobalt) 55%, #1c46c2);
+  background-size: 9px 9px, cover;
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 14px rgba(36, 86, 232, 0.45);
+}
+.prg-row-done::before { background: var(--prg-cyan2); }
+.prg-row-done .prg-row-num, .prg-row-done .prg-row-diff { color: rgba(238, 244, 251, 0.75); }
+.prg-row-done .prg-row-xp { color: var(--prg-cyan2); }
+.prg-row-done .prg-row-check {
+  border-color: rgba(255, 255, 255, 0.75);
+  color: var(--prg-green);
+  text-shadow: 0 0 8px rgba(46, 232, 124, 0.8);
+}
+/* crochets aux 4 coins */
+.prg-row-done .prg-hook { position: absolute; width: 7px; height: 7px; border: 1px solid #fff; }
+.prg-hook-tl { top: -2px; left: -2px; border-right: 0; border-bottom: 0; }
+.prg-hook-tr { top: -2px; right: -2px; border-left: 0; border-bottom: 0; }
+.prg-hook-bl { bottom: -2px; left: -2px; border-right: 0; border-top: 0; }
+.prg-hook-br { bottom: -2px; right: -2px; border-left: 0; border-top: 0; }
+
+/* ═══════════ HUD NIVEAU / VIE ═══════════ */
+.prg-hud {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  margin-bottom: 4px;
+}
+.prg-hud-lv { display: flex; align-items: baseline; gap: 5px; }
+.prg-hud-lv .lv { font-size: 11px; color: var(--prg-dim); letter-spacing: 0.1em; }
+.prg-hud-lv .n {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 26px;
+  color: var(--prg-cyan2);
+  text-shadow: 0 0 10px rgba(87, 200, 255, 0.5);
+  line-height: 1;
+}
+.prg-hud-bar { flex: 1; }
+.prg-hud-xp {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  color: #fff;
+  margin-bottom: 3px;
+}
+.prg-track {
+  height: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.07) 0 1px, transparent 1px 4px),
+    rgba(255, 255, 255, 0.08);
+  position: relative;
+  padding: 1px;
+}
+.prg-track-fill {
+  height: 100%;
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.25) 0 1px, transparent 1px 3px),
+    linear-gradient(90deg, #d9ecff, #ffffff);
+  box-shadow: 0 0 8px rgba(220, 240, 255, 0.5);
+  transition: width 0.5s ease-out;
+}
+
+/* ═══════════ JAUGE RADIALE (hacking ring) ═══════════ */
+.prg-power { display: flex; gap: 18px; align-items: center; }
+.prg-gauge { position: relative; flex-shrink: 0; }
+.prg-gauge svg { display: block; }
+.prg-gauge-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+.prg-gauge-score {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 30px;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 0 12px rgba(87, 200, 255, 0.7);
+}
+.prg-gauge-max { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--prg-dim); }
+.prg-gauge-mode {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 8px;
+  letter-spacing: 0.28em;
+  color: var(--prg-orange);
+  margin-top: 3px;
+  text-transform: uppercase;
+}
+.prg-power-info { flex: 1; min-width: 0; }
+.prg-power-title {
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+.prg-power-sub { color: var(--prg-dim); font-size: 13.5px; margin-bottom: 10px; }
+.prg-stat-lines { display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.prg-stat-lines li { display: flex; gap: 8px; align-items: center; list-style: none; }
+.prg-stat-lines .v { font-family: 'Share Tech Mono', monospace; color: var(--prg-cyan); }
+.prg-stat-lines .prg-mini-diamond {
+  width: 7px; height: 7px; rotate: 45deg; flex-shrink: 0;
+  background: var(--prg-cyan);
+  box-shadow: 0 0 6px rgba(87, 200, 255, 0.6);
+}
+.prg-stat-lines .prg-mini-diamond.orange { background: var(--prg-orange); box-shadow: 0 0 6px rgba(245, 146, 27, 0.6); }
+
+/* ═══════════ COURBE ═══════════ */
+.prg-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+  position: relative;
+}
+.prg-panel-head h3 {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--prg-cyan2);
+  text-shadow: 0 0 10px rgba(87, 200, 255, 0.35);
+}
+.prg-panel-head .sub { font-size: 11px; color: var(--prg-dim); letter-spacing: 0.08em; }
+.prg-curve { width: 100%; height: auto; display: block; }
+.prg-curve-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+}
+.prg-statcell {
+  border: 1px solid rgba(59, 116, 217, 0.35);
+  background: rgba(8, 18, 38, 0.6);
+  text-align: center;
+  padding: 7px 4px 5px;
+}
+.prg-statcell .val {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 20px;
+  color: #fff;
+  line-height: 1.1;
+}
+.prg-statcell .lbl {
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--prg-dim);
+}
+
+/* ═══════════ CHIP ONLINE / OFFLINE ═══════════ */
+.prg-led-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(157, 180, 207, 0.45);
+  background: rgba(8, 14, 24, 0.85);
+  padding: 3px 10px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+}
+.prg-led {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--prg-green);
+  box-shadow: 0 0 7px rgba(46, 232, 124, 0.9);
+}
+.prg-led-off { background: var(--prg-red); box-shadow: 0 0 7px rgba(232, 53, 63, 0.9); }
+
+/* ═══════════ MOMENT POSITIF (modale inline) ═══════════ */
+.prg-quote-title {
+  color: var(--prg-orange);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+.prg-quote {
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--prg-text);
+}
+.prg-quote.empty { color: var(--prg-off); font-style: italic; }
+
+/* ═══════════ BOUTONS CAPSULE BISEAUTÉS ═══════════ */
+.prg-btn {
+  --cut: 9px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #fff;
+  padding: 8px 26px;
+  border: 0;
+  cursor: pointer;
+  clip-path: polygon(var(--cut) 0, calc(100% - var(--cut)) 0, 100% 50%, calc(100% - var(--cut)) 100%, var(--cut) 100%, 0 50%);
+  background:
+    radial-gradient(rgba(255,255,255,0.12) 1px, transparent 1.3px),
+    linear-gradient(90deg, #2e63f0, #1c46c2);
+  background-size: 8px 8px, cover;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55), 0 0 16px rgba(36, 86, 232, 0.4);
+}
+.prg-btn-ghost {
+  background: rgba(8, 14, 24, 0.6);
+  box-shadow: inset 0 0 0 1px rgba(157, 180, 207, 0.55);
+  color: #cfd9e6;
+}
+
+/* ═══════════ PIED : hints touches ═══════════ */
+.prg-foot {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 18px 12px;
+  background: linear-gradient(to top, rgba(3, 6, 8, 0.95) 40%, transparent);
+  pointer-events: none;
+}
+.prg-foot-ctx {
+  color: var(--prg-cyan2);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-shadow: 0 0 8px rgba(87, 200, 255, 0.4);
+}
+.prg-foot-keys { display: flex; gap: 16px; align-items: center; font-size: 14px; font-weight: 600; }
+.prg-foot-keys > span { display: inline-flex; gap: 6px; align-items: center; }
+
+/* ═══════════ responsive ═══════════ */
+.prg-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 720px) {
+  .prg-grid { grid-template-columns: 1fr; }
+  .prg-title { font-size: 26px; }
+}
