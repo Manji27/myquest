@@ -6,6 +6,9 @@ import {
   monthKey,
   monthLabel,
 } from '../../lib/contracts'
+import editContractIcon from '../../../references/cyberpunk-ui/cyberpunk-icons/quest-ecriture.png'
+import viewStepsIcon from '../../../references/cyberpunk-ui/cyberpunk-icons/ui-memory-archive.png'
+import validateMissionIcon from '../../../references/cyberpunk-ui/cyberpunk-icons/quest-objectif.png'
 
 type Props = {
   state: AppState
@@ -200,19 +203,33 @@ export function MonthlyContractBoard({ state, setState }: Props) {
         </div>
 
         <div className="cp-contract-actions">
-          <button type="button" className="cp-contract-secondary" onClick={openEditor}>
-            Modifier le contrat
-          </button>
-          <button type="button" className="cp-contract-secondary" onClick={() => setProtocolOpen(true)}>
-            Voir les étapes
+          <button
+            type="button"
+            className="cp-contract-secondary cp-contract-icon-btn"
+            onClick={openEditor}
+            aria-label="Modifier le contrat"
+            title="Modifier le contrat"
+          >
+            <img src={editContractIcon} alt="" />
           </button>
           <button
             type="button"
-            className="cp-contract-primary"
+            className="cp-contract-secondary cp-contract-icon-btn"
+            onClick={() => setProtocolOpen(true)}
+            aria-label="Voir les étapes"
+            title="Voir les étapes"
+          >
+            <img src={viewStepsIcon} alt="" />
+          </button>
+          <button
+            type="button"
+            className="cp-contract-primary cp-contract-icon-btn"
             onClick={completeContract}
             disabled={!ready || Boolean(contract.completedAt)}
+            aria-label={contract.completedAt ? 'Mission archivée' : 'Valider la mission'}
+            title={contract.completedAt ? 'Mission archivée' : 'Valider la mission'}
           >
-            {contract.completedAt ? '✓ Mission archivée' : 'Valider la mission'}
+            <img src={validateMissionIcon} alt="" />
           </button>
         </div>
 

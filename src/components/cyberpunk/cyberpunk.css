@@ -281,6 +281,17 @@
 .cp-missions-view .lpc-locked .lpc-desc { color: rgba(255, 91, 83, .52); }
 .cp-missions-view .lpc-card { min-height: 210px; }
 
+/* Sur mobile, le portrait 27/40 rend les cartes très hautes (2 colonnes) et
+   force un long scroll. On les raccourcit (4/5) tout en gardant l'illustration
+   reconnaissable ; le recadrage se fait via object-fit: cover. */
+@media (max-width: 639px) {
+  .cp-missions-view .lpc-card,
+  .cp-progression-view .lpc-card {
+    aspect-ratio: 4 / 5;
+    min-height: 0;
+  }
+}
+
 /* ═══════════ TRACKER OBJECTIF ═══════════ */
 .cp-tracker { text-align: right; margin: 2px 2px 14px; }
 .cp-tracker-title {
@@ -1441,6 +1452,19 @@
   background: rgba(255, 214, 64, .1);
   color: var(--cp-yellow);
 }
+/* Boutons d'action à icône : compacts, l'icône centrée, tout tient sur une
+   seule ligne (y compris sur mobile). Le texte est porté par aria-label/title. */
+.cp-contract-icon-btn {
+  min-width: 0;
+  padding: 7px 12px;
+}
+.cp-contract-icon-btn img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  display: block;
+}
+.cp-contract-primary.cp-contract-icon-btn:disabled img { opacity: .4; }
 .cp-contract-primary:hover:not(:disabled),
 .cp-contract-primary:focus-visible:not(:disabled) {
   background: var(--cp-yellow);
@@ -1681,8 +1705,8 @@
   .cp-contract-brief { padding: 4px 5px 9px; }
   .cp-contract h2 { font-size: 30px; }
   .cp-contract-topline { align-items: flex-start; }
-  .cp-contract-actions { justify-content: stretch; }
-  .cp-contract-actions button { flex: 1 1 100%; min-width: 0; padding-inline: 10px; }
+  .cp-contract-actions { justify-content: stretch; flex-wrap: nowrap; }
+  .cp-contract-actions button { flex: 1 1 0; min-width: 0; padding-inline: 10px; }
   .cp-contract-empty { align-items: stretch; flex-direction: column; }
   .cp-power-num { min-width: 84px; font-size: 38px; }
   .cp-binary { display: none; }
