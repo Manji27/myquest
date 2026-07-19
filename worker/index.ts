@@ -52,18 +52,24 @@ const MAX_BODY_BYTES = 8_192
 const ACCESS_JWKS = createRemoteJWKSet(
   new URL('https://marcus-mendy27.cloudflareaccess.com/cdn-cgi/access/certs'),
 )
+// En dev, Vite injecte un <script> inline (preamble React Refresh) et ouvre un
+// websocket HMR. Une CSP stricte les bloquerait → page blanche. On relâche donc
+// script-src/connect-src uniquement en dev ; la prod garde la CSP stricte.
+const DEV = import.meta.env.DEV
 const SECURITY_HEADERS: Record<string, string> = {
   'Content-Security-Policy': [
     "default-src 'self'",
     "base-uri 'none'",
-    "connect-src 'self' https://*.neon.tech",
+    DEV
+      ? "connect-src 'self' ws: wss: https://*.neon.tech"
+      : "connect-src 'self' https://*.neon.tech",
     "font-src 'self' data: https://fonts.gstatic.com",
     "form-action 'self'",
     "frame-ancestors 'none'",
     "img-src 'self' data: blob:",
     "manifest-src 'self'",
     "object-src 'none'",
-    "script-src 'self'",
+    DEV ? "script-src 'self' 'unsafe-inline'" : "script-src 'self'",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "worker-src 'self' blob:",
     'upgrade-insecure-requests',
