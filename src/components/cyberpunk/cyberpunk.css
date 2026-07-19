@@ -229,6 +229,58 @@
   padding: 2px 6px;
 }
 
+/* ═══════════ SOUS-ONGLETS MISSIONS (hebdo / mensuel) ═══════════ */
+.cp-subtabs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 16px 0 4px;
+}
+.cp-subtab {
+  background: rgba(11, 10, 16, 0.9);
+  border: 1px solid var(--cp-border);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cp-red-nav);
+  padding: 9px 16px;
+}
+.cp-subtab .tico { font-size: 11px; }
+.cp-subtab:hover,
+.cp-subtab:focus-visible { color: var(--cp-sky); }
+.cp-subtab:focus-visible { outline: 1px solid var(--cp-cyan); outline-offset: 2px; }
+.cp-subtab-active {
+  color: var(--cp-cyan);
+  border-color: rgba(94, 242, 255, 0.6);
+  text-shadow: 0 0 10px rgba(94, 242, 255, 0.55);
+  box-shadow: inset 0 -2px 0 0 var(--cp-cyan);
+}
+.cp-subtabs-note { margin-left: auto; }
+
+/* Grille de contrats : même géométrie que les succès Lifepath. */
+.cp-missions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 14px;
+}
+@media (min-width: 640px) {
+  .cp-missions-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 1024px) {
+  .cp-missions-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.cp-missions-view .lpc-title { color: var(--cp-red); }
+.cp-missions-view .lpc-desc { color: var(--cp-red); }
+.cp-missions-view .lpc-locked .lpc-desc { color: rgba(255, 91, 83, .52); }
+.cp-missions-view .lpc-card { min-height: 210px; }
+
 /* ═══════════ TRACKER OBJECTIF ═══════════ */
 .cp-tracker { text-align: right; margin: 2px 2px 14px; }
 .cp-tracker-title {

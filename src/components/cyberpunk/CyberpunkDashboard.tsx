@@ -10,6 +10,7 @@ import { DayNavigator } from '../DayNavigator'
 import { QuestEditor } from '../QuestEditor'
 import { CYBERPUNK_ICON_BY_EMOJI, CYBERPUNK_QUEST_ICONS } from './questIcons'
 import { MonthlyContractBoard } from './MonthlyContract'
+import { MissionsBoard } from './MissionsBoard'
 import { useCyberpunkSounds } from './useCyberpunkSounds'
 import previousDayIcon from '../../../references/cyberpunk-ui/cyberpunk-icons/nav-arrow-previous.png'
 import nextDayIcon from '../../../references/cyberpunk-ui/cyberpunk-icons/nav-arrow-next.png'
@@ -27,7 +28,7 @@ export function CyberpunkDashboard() {
   const rootRef = useRef<HTMLDivElement>(null)
   const [state, setState, applyRemote] = usePersistentState()
   const cloud = useCloudSync(state, applyRemote)
-  const [view, setView] = useState<'jour' | 'progression' | 'souvenirs'>('jour')
+  const [view, setView] = useState<'jour' | 'missions' | 'progression' | 'souvenirs'>('jour')
   const [editorOpen, setEditorOpen] = useState(false)
   const today = todayKey()
   const [selectedDate, setSelectedDate] = useState(today)
@@ -149,6 +150,13 @@ export function CyberpunkDashboard() {
             <span className="tico">◆</span>Journal
           </button>
           <button
+            className={`cp-tab ${view === 'missions' ? 'cp-tab-active' : ''}`}
+            aria-current={view === 'missions' ? 'page' : undefined}
+            onClick={() => changeView('missions')}
+          >
+            <span className="tico">◈</span>Missions
+          </button>
+          <button
             className={`cp-tab ${view === 'progression' ? 'cp-tab-active' : ''}`}
             aria-current={view === 'progression' ? 'page' : undefined}
             onClick={() => changeView('progression')}
@@ -162,10 +170,22 @@ export function CyberpunkDashboard() {
           >
             <span className="tico">▣</span>Souvenirs
           </button>
-          <span className="cp-tab-num">3</span>
+          <span className="cp-tab-num">4</span>
         </nav>
 
-        {view === 'progression' ? (
+        {view === 'missions' ? (
+          <div className="cp-base-view cp-missions-view">
+            <div className="cp-view-heading">
+              <span className="cp-fold" />
+              <div>
+                <span className="cp-view-kicker">Registre des contrats</span>
+                <h2>Missions</h2>
+              </div>
+              <span className="cp-note cp-note-cyan">Contracts // hebdo · mensuel</span>
+            </div>
+            <MissionsBoard state={state} onScopeChange={playTab} />
+          </div>
+        ) : view === 'progression' ? (
           <div className="cp-base-view cp-progression-view">
             <div className="cp-view-heading">
               <span className="cp-fold" />
