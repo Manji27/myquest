@@ -114,12 +114,12 @@ export function Progression({
                   achievementArt ? (
                     <>
                       <img src={achievementArt} alt="" />
-                      <span className="hint">{done ? 'Débloqué' : 'Verrouillé'}</span>
+                      {!done && <span className="hint">Verrouillé</span>}
                     </>
                   ) : (
                     <>
                       <span className="ico">{a.icon}</span>
-                      <span className="hint">{done ? 'Débloqué' : 'Verrouillé'}</span>
+                      {!done && <span className="hint">Verrouillé</span>}
                     </>
                   )
                 }

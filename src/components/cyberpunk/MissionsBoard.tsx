@@ -70,12 +70,12 @@ export function MissionsBoard({
                 art ? (
                   <>
                     <img src={art} alt="" />
-                    <span className="hint">{done ? 'Débloqué' : 'Verrouillé'}</span>
+                    {!done && <span className="hint">Verrouillé</span>}
                   </>
                 ) : (
                   <>
                     <span className="ico">{a.icon}</span>
-                    <span className="hint">{done ? 'Débloqué' : 'Verrouillé'}</span>
+                    {!done && <span className="hint">Verrouillé</span>}
                   </>
                 )
               }
