@@ -7,9 +7,8 @@ import { useCloudSync } from '../../lib/useCloudSync'
 import { Progression } from '../Progression'
 import { Memories } from '../Memories'
 import { DayNavigator } from '../DayNavigator'
-import { QuestEditor } from '../QuestEditor'
+import { SettingsModal } from './SettingsModal'
 import { CYBERPUNK_ICON_BY_EMOJI, CYBERPUNK_QUEST_ICONS } from './questIcons'
-import { MonthlyContractBoard } from './MonthlyContract'
 import { MissionsBoard } from './MissionsBoard'
 import { useCyberpunkSounds } from './useCyberpunkSounds'
 import previousDayIcon from '../../../references/cyberpunk-ui/cyberpunk-icons/nav-arrow-previous.png'
@@ -28,7 +27,7 @@ export function CyberpunkDashboard() {
   const rootRef = useRef<HTMLDivElement>(null)
   const [state, setState, applyRemote] = usePersistentState()
   const cloud = useCloudSync(state, applyRemote)
-  const [view, setView] = useState<'jour' | 'missions' | 'progression' | 'souvenirs'>('jour')
+  const [view, setView] = useState<'jour' | 'missions' | 'stats' | 'souvenirs'>('jour')
   const [editorOpen, setEditorOpen] = useState(false)
   const [shardSaved, setShardSaved] = useState(false)
   const shardSavedTimer = useRef<number | undefined>(undefined)
@@ -146,8 +145,8 @@ export function CyberpunkDashboard() {
             <button
               className="cp-settings"
               onClick={() => setEditorOpen(true)}
-              aria-label="Gérer les quêtes"
-              title="Gérer les quêtes"
+              aria-label="Réglages"
+              title="Réglages"
             >
               ⚙
             </button>
@@ -172,11 +171,11 @@ export function CyberpunkDashboard() {
             <span className="tico">◈</span>Missions
           </button>
           <button
-            className={`cp-tab ${view === 'progression' ? 'cp-tab-active' : ''}`}
-            aria-current={view === 'progression' ? 'page' : undefined}
-            onClick={() => changeView('progression')}
+            className={`cp-tab ${view === 'stats' ? 'cp-tab-active' : ''}`}
+            aria-current={view === 'stats' ? 'page' : undefined}
+            onClick={() => changeView('stats')}
           >
-            <span className="tico">◇</span>Progression
+            <span className="tico">◇</span>Stats
           </button>
           <button
             className={`cp-tab ${view === 'souvenirs' ? 'cp-tab-active' : ''}`}
@@ -193,30 +192,43 @@ export function CyberpunkDashboard() {
             <div className="cp-view-heading">
               <span className="cp-fold" />
               <div>
-                <span className="cp-view-kicker">Registre des contrats</span>
+                <span className="cp-view-kicker">Registre des objectifs</span>
                 <h2>Missions</h2>
               </div>
-              <span className="cp-note cp-note-cyan">Contracts // hebdo · mensuel</span>
+              <span className="cp-note cp-note-cyan">Contracts // objectives</span>
             </div>
-            <MissionsBoard state={state} onScopeChange={playTab} />
+            <MissionsBoard state={state} setState={setState} onTabChange={playTab} />
           </div>
-        ) : view === 'progression' ? (
+        ) : view === 'stats' ? (
           <div className="cp-base-view cp-progression-view">
             <div className="cp-view-heading">
               <span className="cp-fold" />
               <div>
                 <span className="cp-view-kicker">Données mercenaire</span>
-                <h2>Progression</h2>
+                <h2>Stats</h2>
               </div>
-              <span className="cp-note cp-note-cyan">Achievements // live feed</span>
+              <span className="cp-note cp-note-cyan">Analytics // live feed</span>
             </div>
+            <section className="cp-panel" style={{ marginTop: 14 }}>
+              <span className="cp-fold" />
+              <div className="cp-panel-head">
+                <h3>Puissance · 14 jours</h3>
+                <span className="sub">Tendance récente</span>
+              </div>
+              <CpCurve state={state} />
+              <div className="cp-curve-stats">
+                <div className="cp-statcell"><div className="val">{score}</div><div className="lbl">Aujourd'hui</div></div>
+                <div className="cp-statcell"><div className="val">{recordScore(state)}</div><div className="lbl">Record</div></div>
+                <div className="cp-statcell"><div className="val">{avgScore(state)}</div><div className="lbl">Moyenne</div></div>
+              </div>
+            </section>
             <Progression
               state={state}
               setState={setState}
               cloud={cloud}
               onOpenDay={openJournalDay}
-              cyberpunkAchievementPreview
               cyberpunkUi
+              variant="stats"
               questIconImages={questIconImages}
             />
           </div>
@@ -245,8 +257,6 @@ export function CyberpunkDashboard() {
             calendarIcon={calendarIcon}
           />
         </div>
-
-        <MonthlyContractBoard state={state} setState={setState} />
 
         <div className="cp-grid">
           {/* ——— Colonne gauche ——— */}
@@ -323,20 +333,6 @@ export function CyberpunkDashboard() {
 
           {/* ——— Colonne droite ——— */}
           <div>
-            <section className="cp-panel">
-              <span className="cp-fold" />
-              <div className="cp-panel-head">
-                <h3>Stats</h3>
-                <span className="sub">14 derniers jours</span>
-              </div>
-              <CpCurve state={state} />
-              <div className="cp-curve-stats">
-                <div className="cp-statcell"><div className="val">{score}</div><div className="lbl">Aujourd'hui</div></div>
-                <div className="cp-statcell"><div className="val">{recordScore(state)}</div><div className="lbl">Record</div></div>
-                <div className="cp-statcell"><div className="val">{avgScore(state)}</div><div className="lbl">Moyenne</div></div>
-              </div>
-            </section>
-
             {/* Moment positif — datashard */}
             <div className="cp-shard">
               <div className="cp-shard-title"><span className="ico">▮</span>Datashard · moment positif</div>
@@ -390,11 +386,12 @@ export function CyberpunkDashboard() {
       </footer>
 
       {editorOpen && (
-        <QuestEditor
+        <SettingsModal
           state={state}
           setState={setState}
+          cloud={cloud}
+          questIconImages={questIconImages}
           onClose={() => setEditorOpen(false)}
-          theme="cyberpunk"
         />
       )}
     </div>

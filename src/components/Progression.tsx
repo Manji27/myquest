@@ -33,6 +33,13 @@ type Props = {
   cyberpunkUi?: boolean
   /** Illustrations optionnelles des quêtes, indexées par identifiant. */
   questIconImages?: Readonly<Record<string, string>>
+  /**
+   * Filtre les sections affichées :
+   * - `stats`    : analytics uniquement (heatmap, semaine, résumé, taux/quête)
+   * - `settings` : réglages uniquement (sync cloud, rappels, sauvegarde)
+   * - `full`     : tout (compat historique)
+   */
+  variant?: 'full' | 'stats' | 'settings'
 }
 
 export function Progression({
@@ -43,7 +50,11 @@ export function Progression({
   cyberpunkAchievementPreview = false,
   cyberpunkUi = false,
   questIconImages,
+  variant = 'full',
 }: Props) {
+  const showSettings = variant === 'full' || variant === 'settings'
+  const showStats = variant === 'full' || variant === 'stats'
+  const showAchievements = variant === 'full'
   const stats = useMemo(() => computeStats(state), [state])
   const fileRef = useRef<HTMLInputElement>(null)
   const [notice, setNotice] = useState<string | null>(null)
@@ -71,26 +82,31 @@ export function Progression({
   return (
     <div className="mt-4 space-y-6">
       {/* synchronisation cloud */}
-      <CloudCard cloud={cloud} cyberpunkUi={cyberpunkUi} />
+      {showSettings && <CloudCard cloud={cloud} cyberpunkUi={cyberpunkUi} />}
 
       {/* rappel quotidien */}
-      <ReminderCard cloud={cloud} state={state} setState={setState} cyberpunkUi={cyberpunkUi} />
+      {showSettings && (
+        <ReminderCard cloud={cloud} state={state} setState={setState} cyberpunkUi={cyberpunkUi} />
+      )}
 
       {/* heatmap annuelle */}
-      <Heatmap state={state} onSelectDay={onOpenDay} />
+      {showStats && <Heatmap state={state} onSelectDay={onOpenDay} />}
 
       {/* bilan de la semaine */}
-      <WeeklySummary state={state} />
+      {showStats && <WeeklySummary state={state} />}
 
       {/* résumé */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <SummaryCard label="Niveau" value={stats.level} accent="#818cf8" />
-        <SummaryCard label="XP total" value={stats.totalXp} accent="#f472b6" />
-        <SummaryCard label="Série actuelle" value={`${stats.currentStreak} j`} accent="#fb923c" />
-        <SummaryCard label="Record de série" value={`${stats.bestStreak} j`} accent="#fbbf24" />
-      </div>
+      {showStats && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <SummaryCard label="Niveau" value={stats.level} accent="#818cf8" />
+          <SummaryCard label="XP total" value={stats.totalXp} accent="#f472b6" />
+          <SummaryCard label="Série actuelle" value={`${stats.currentStreak} j`} accent="#fb923c" />
+          <SummaryCard label="Record de série" value={`${stats.bestStreak} j`} accent="#fbbf24" />
+        </div>
+      )}
 
       {/* badges */}
+      {showAchievements && (
       <section>
         <div className="flex items-baseline justify-between mb-2 px-1">
           <h3 className="text-sm font-bold text-indigo-300">Succès</h3>
@@ -128,9 +144,10 @@ export function Progression({
           })}
         </div>
       </section>
+      )}
 
       {/* statistiques par quête */}
-      {sortedQuests.length > 0 && (
+      {showStats && sortedQuests.length > 0 && (
         <section>
           <h3 className="text-sm font-bold text-indigo-300 mb-2 px-1">
             Taux de réussite par quête
@@ -169,6 +186,7 @@ export function Progression({
       )}
 
       {/* sauvegarde */}
+      {showSettings && (
       <section>
         <h3 className="text-sm font-bold text-indigo-300 mb-2 px-1">Sauvegarde de tes données</h3>
         <div className="glass rounded-2xl p-4">
@@ -210,6 +228,7 @@ export function Progression({
           {notice && <p className="text-xs mt-3 text-slate-300">{notice}</p>}
         </div>
       </section>
+      )}
     </div>
   )
 }

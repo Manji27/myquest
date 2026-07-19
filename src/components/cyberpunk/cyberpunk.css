@@ -263,6 +263,38 @@
 }
 .cp-subtabs-note { margin-left: auto; }
 
+/* ═══════════ SOUS-ONGLETS DE LA MODALE RÉGLAGES ═══════════ */
+.cp-settings-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.cp-settings-tab {
+  flex: 1 1 0;
+  background: rgba(11, 10, 16, 0.9);
+  border: 1px solid var(--cp-border);
+  color: var(--cp-red-nav);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 9px 10px;
+}
+.cp-settings-tab:hover,
+.cp-settings-tab:focus-visible { color: var(--cp-sky); }
+.cp-settings-tab:focus-visible { outline: 1px solid var(--cp-cyan); outline-offset: 2px; }
+.cp-settings-tab-active {
+  color: var(--cp-cyan);
+  border-color: rgba(94, 242, 255, 0.6);
+  text-shadow: 0 0 10px rgba(94, 242, 255, 0.55);
+  box-shadow: inset 0 -2px 0 0 var(--cp-cyan);
+}
+/* Dans la modale, la page Progression (variant settings) ne doit pas ajouter
+   son propre espacement ni fond de vue. */
+.cp-settings-body .cp-base-view { padding-bottom: 0; }
+.cp-settings-body .cp-base-view > .mt-4 { margin-top: 0; }
+
 /* Grille de contrats : même géométrie que les succès Lifepath. */
 .cp-missions-grid {
   display: grid;
