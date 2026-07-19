@@ -461,7 +461,8 @@
    a demandé à réduire les mouvements. */
 @media (prefers-reduced-motion: reduce) {
   .cp-briefing,
-  .cp-briefing .ico { animation: none; }
+  .cp-briefing .ico,
+  .cp-contract-status i { animation: none; }
 }
 
 

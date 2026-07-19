@@ -1,22 +1,26 @@
-import { StrictMode } from 'react'
+import { StrictMode, Suspense, lazy } from 'react'
 import { createRoot } from 'react-dom/client'
 import { registerSW } from 'virtual:pwa-register'
 import './index.css'
-import App from './App'
-import { FFXDashboard } from './components/ffx/FFXDashboard'
-import { P3RDashboard } from './components/p3r/P3RDashboard'
-import { PragmataDashboard } from './components/pragmata/PragmataDashboard'
 import { CyberpunkDashboard } from './components/cyberpunk/CyberpunkDashboard'
 
-// Cyberpunk est l'expérience principale. Les anciennes directions artistiques
-// restent accessibles explicitement pour comparaison et maintenance.
+// Cyberpunk est l'expérience principale (chargée d'emblée). Les anciennes
+// directions artistiques ne servent qu'en debug via query param : on les
+// charge à la demande (lazy) pour ne pas alourdir le bundle mobile principal.
+const FFXDashboard = lazy(() => import('./components/ffx/FFXDashboard').then((m) => ({ default: m.FFXDashboard })))
+const P3RDashboard = lazy(() => import('./components/p3r/P3RDashboard').then((m) => ({ default: m.P3RDashboard })))
+const PragmataDashboard = lazy(() => import('./components/pragmata/PragmataDashboard').then((m) => ({ default: m.PragmataDashboard })))
+const App = lazy(() => import('./App'))
+
 const params = new URLSearchParams(window.location.search)
 
 function Root() {
-  if (params.has('ffx')) return <FFXDashboard />
-  if (params.has('p3')) return <P3RDashboard />
-  if (params.has('pragmata')) return <PragmataDashboard />
-  if (params.has('classic')) return <App />
+  const alt = params.has('ffx') ? <FFXDashboard />
+    : params.has('p3') ? <P3RDashboard />
+    : params.has('pragmata') ? <PragmataDashboard />
+    : params.has('classic') ? <App />
+    : null
+  if (alt) return <Suspense fallback={null}>{alt}</Suspense>
   return <CyberpunkDashboard />
 }
 

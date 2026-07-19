@@ -80,7 +80,7 @@ export function MissionsBoard({
                 art={
                   art ? (
                     <>
-                      <img src={art} alt="" />
+                      <img src={art} alt="" loading="lazy" decoding="async" />
                       {!done && <span className="hint">Verrouillé</span>}
                     </>
                   ) : (

@@ -129,7 +129,7 @@ export function Progression({
                 art={
                   achievementArt ? (
                     <>
-                      <img src={achievementArt} alt="" />
+                      <img src={achievementArt} alt="" loading="lazy" decoding="async" />
                       {!done && <span className="hint">Verrouillé</span>}
                     </>
                   ) : (
