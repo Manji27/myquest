@@ -10,6 +10,10 @@ export default defineConfig({
   server: { port: 5173, strictPort: true },
   plugins: [react(), tailwindcss(), VitePWA({
     registerType: 'autoUpdate',
+    // On enregistre le SW nous-mêmes via `virtual:pwa-register` dans main.tsx
+    // (auto-reload + update périodique). Sans ça, le plugin injecte un
+    // registerSW.js minimal qui n'a aucune logique de rechargement.
+    injectRegister: false,
     includeAssets: ['favicon.svg', 'push-handler.js'],
     // importe le handler de notifications push dans le service worker généré
     workbox: {
