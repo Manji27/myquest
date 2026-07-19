@@ -308,7 +308,6 @@ export function CyberpunkDashboard() {
                       onClick={() => toggleQuest(q.id)}
                       onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && toggleQuest(q.id)}
                     >
-                      {isDone && <span className="cp-up">▲</span>}
                       <span className="cp-row-icon">
                         {iconImage ? <img src={iconImage} alt="" /> : q.icon}
                       </span>

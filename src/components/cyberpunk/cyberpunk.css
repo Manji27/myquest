@@ -303,7 +303,7 @@
   text-align: left;
   transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
   /* pulsation en boucle pour attirer l'œil */
-  animation: cp-brief-pulse 1.9s ease-in-out infinite;
+  animation: cp-brief-pulse 1.1s ease-in-out infinite;
 }
 .cp-briefing:hover,
 .cp-briefing:focus-visible {
@@ -314,7 +314,7 @@
   animation-name: cp-brief-pulse-warn;
 }
 /* l'icône diamant pulse aussi (halo) */
-.cp-briefing .ico { animation: cp-brief-ico 1.9s ease-in-out infinite; }
+.cp-briefing .ico { animation: cp-brief-ico 1.1s ease-in-out infinite; }
 
 @keyframes cp-brief-pulse {
   0%, 100% {
