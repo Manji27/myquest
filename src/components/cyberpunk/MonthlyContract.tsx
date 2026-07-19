@@ -537,6 +537,7 @@ function ContractEditor({
   fixedPeriodLabel?: string
 }) {
   const valid = draft.title.trim() && draft.description.trim() && draft.steps.some((step) => step.trim())
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   return (
     <div className="cp-contract-editor-backdrop" role="presentation">
@@ -612,7 +613,14 @@ function ContractEditor({
 
         <div className="cp-contract-editor-actions">
           {onDelete && (
-            <button type="button" className="cp-contract-editor-del" onClick={onDelete}>Supprimer</button>
+            <button
+              type="button"
+              className="cp-contract-editor-del"
+              onClick={() => (confirmDelete ? onDelete() : setConfirmDelete(true))}
+              onBlur={() => setConfirmDelete(false)}
+            >
+              {confirmDelete ? 'Confirmer ?' : 'Supprimer'}
+            </button>
           )}
           <button type="button" onClick={onCancel}>Annuler</button>
           <button type="button" onClick={onSave} disabled={!valid}>Enregistrer le contrat</button>

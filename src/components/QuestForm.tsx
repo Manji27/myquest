@@ -35,6 +35,8 @@ export function QuestForm({ initial, onSave, onCancel, onDelete, theme = 'defaul
   const [days, setDays] = useState<number[]>(
     initial?.days && initial.days.length > 0 ? initial.days : ALL_DAYS,
   )
+  // Suppression en deux temps : un premier appui demande confirmation.
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   const everyday = days.length >= 7
   const canSave = label.trim().length > 0 && days.length > 0
@@ -176,10 +178,13 @@ export function QuestForm({ initial, onSave, onCancel, onDelete, theme = 'defaul
       <div className="flex gap-2 pt-1">
         {onDelete && (
           <button
-            onClick={onDelete}
-            className="quest-action-delete rounded-xl px-4 py-3 font-semibold bg-red-500/15 text-red-300 active:scale-[0.97] transition"
+            onClick={() => (confirmDelete ? onDelete() : setConfirmDelete(true))}
+            onBlur={() => setConfirmDelete(false)}
+            className={`quest-action-delete rounded-xl px-4 py-3 font-semibold active:scale-[0.97] transition ${
+              confirmDelete ? 'bg-red-500 text-white' : 'bg-red-500/15 text-red-300'
+            }`}
           >
-            Supprimer
+            {confirmDelete ? 'Confirmer ?' : 'Supprimer'}
           </button>
         )}
         <button

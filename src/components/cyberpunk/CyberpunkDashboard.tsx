@@ -33,8 +33,32 @@ export function CyberpunkDashboard() {
   const [shardSaved, setShardSaved] = useState(false)
   const shardSavedTimer = useRef<number | undefined>(undefined)
   const shardInputRef = useRef<HTMLTextAreaElement>(null)
-  const today = todayKey()
+  // « Aujourd'hui » se recalcule si l'app reste ouverte au passage de minuit
+  // (focus / retour d'onglet / toutes les minutes), pour éviter de valider une
+  // quête sur la mauvaise journée.
+  const [today, setToday] = useState(todayKey)
+  const todayRef = useRef(today)
+  todayRef.current = today
   const [selectedDate, setSelectedDate] = useState(today)
+
+  useEffect(() => {
+    function refreshToday() {
+      const now = todayKey()
+      if (now === todayRef.current) return
+      // si on regardait « aujourd'hui », on suit automatiquement le nouveau jour
+      setSelectedDate((current) => (current === todayRef.current ? now : current))
+      setToday(now)
+    }
+    const onVisible = () => { if (!document.hidden) refreshToday() }
+    document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('focus', refreshToday)
+    const timer = window.setInterval(refreshToday, 60_000)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('focus', refreshToday)
+      window.clearInterval(timer)
+    }
+  }, [])
   const log = state.logs[selectedDate] ?? { date: selectedDate, completed: [], positiveEvent: '' }
   const dayQuests = useMemo(
     () => questsForDate(state.quests, selectedDate),
@@ -86,22 +110,24 @@ export function CyberpunkDashboard() {
 
   /** Coche/décoche une quête (même state persistant que l'app principale). */
   function toggleQuest(id: string) {
-    const wasCompleted = log.completed.includes(id)
-    const completed = wasCompleted
-      ? log.completed.filter((x) => x !== id)
-      : [...log.completed, id]
-    if (!wasCompleted) playValidation()
-    setState((prev) => ({
-      ...prev,
-      logs: { ...prev.logs, [selectedDate]: { ...log, completed } },
-    }))
+    if (!log.completed.includes(id)) playValidation()
+    // On dérive TOUJOURS de `prev` (pas de la fermeture `log`) : deux validations
+    // rapides avant re-render ne doivent jamais s'écraser l'une l'autre.
+    setState((prev) => {
+      const prevLog = prev.logs[selectedDate] ?? { date: selectedDate, completed: [], positiveEvent: '' }
+      const has = prevLog.completed.includes(id)
+      const completed = has
+        ? prevLog.completed.filter((x) => x !== id)
+        : [...prevLog.completed, id]
+      return { ...prev, logs: { ...prev.logs, [selectedDate]: { ...prevLog, completed } } }
+    })
   }
 
   function updatePositiveEvent(positiveEvent: string) {
-    setState((prev) => ({
-      ...prev,
-      logs: { ...prev.logs, [selectedDate]: { ...log, positiveEvent } },
-    }))
+    setState((prev) => {
+      const prevLog = prev.logs[selectedDate] ?? { date: selectedDate, completed: [], positiveEvent: '' }
+      return { ...prev, logs: { ...prev.logs, [selectedDate]: { ...prevLog, positiveEvent } } }
+    })
   }
 
   /**
