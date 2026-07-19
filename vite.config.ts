@@ -14,7 +14,7 @@ export default defineConfig({
     // (auto-reload + update périodique). Sans ça, le plugin injecte un
     // registerSW.js minimal qui n'a aucune logique de rechargement.
     injectRegister: false,
-    includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'push-handler.js'],
+    includeAssets: ['apple-touch-icon.png', 'push-handler.js'],
     // importe le handler de notifications push dans le service worker généré
     workbox: {
       // Active le nouveau SW immédiatement, sans attendre un message du client.
@@ -43,7 +43,6 @@ export default defineConfig({
       orientation: 'portrait',
       start_url: '/',
       icons: [
-        { src: 'favicon.svg', sizes: 'any', type: 'image/svg+xml' },
         { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
         { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
         { src: 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
