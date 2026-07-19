@@ -263,6 +263,104 @@
 }
 .cp-subtabs-note { margin-left: auto; }
 
+/* ═══════════ PREVIEW — Rappel missions (page ?missiontest) ═══════════ */
+.cp-mr-h1 {
+  color: var(--cp-cyan);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  text-shadow: 0 0 10px rgba(94, 242, 255, .5);
+}
+.cp-mr-lead { color: var(--cp-red); font-size: 14px; margin: 4px 0 26px; }
+.cp-mr-block { margin: 0 0 32px; }
+.cp-mr-label {
+  color: var(--cp-yellow);
+  font: 11px 'Share Tech Mono', monospace;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  margin-bottom: 9px;
+}
+.cp-mr-caption { color: rgba(232, 238, 242, .55); font-size: 12.5px; margin-top: 9px; line-height: 1.45; }
+.cp-mr-caption b { color: var(--cp-sky); font-weight: 700; }
+.cp-mr-state { color: var(--cp-red-nav); font: 10px 'Share Tech Mono', monospace; letter-spacing: .14em; text-transform: uppercase; margin: 12px 0 5px; }
+
+/* Format A — bandeau */
+.cp-mr-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--cp-border);
+  border-left: 4px solid var(--cp-cyan);
+  background: var(--cp-panel);
+  padding: 11px 14px;
+  margin-bottom: 8px;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
+}
+.cp-mr-banner.warn { border-left-color: var(--cp-yellow); }
+.cp-mr-banner .ico { color: var(--cp-cyan); font-size: 15px; flex-shrink: 0; }
+.cp-mr-banner.warn .ico { color: var(--cp-yellow); }
+.cp-mr-banner .txt { color: var(--cp-white); font-size: 14.5px; font-weight: 600; letter-spacing: .01em; }
+.cp-mr-banner .txt .sep { color: var(--cp-red-nav); margin: 0 8px; }
+.cp-mr-banner .txt .hot { color: var(--cp-yellow); font-weight: 700; }
+.cp-mr-banner .cta {
+  margin-left: auto;
+  color: var(--cp-cyan);
+  font: 700 12px 'Share Tech Mono', monospace;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Format B — mini-cartes */
+.cp-mr-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.cp-mr-card {
+  position: relative;
+  border: 1px solid var(--cp-border);
+  background: var(--cp-panel);
+  padding: 12px 13px 15px;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%);
+}
+.cp-mr-card .head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  color: var(--cp-red-nav);
+  font: 11px 'Share Tech Mono', monospace;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  margin-bottom: 9px;
+}
+.cp-mr-card .head .dl { color: var(--cp-salmon); }
+.cp-mr-card .name { color: var(--cp-white); font-size: 16px; font-weight: 700; line-height: 1.1; }
+.cp-mr-card .prog { display: flex; align-items: center; gap: 9px; margin-top: 10px; }
+.cp-mr-bar { flex: 1; height: 6px; background: rgba(255, 91, 83, .18); }
+.cp-mr-bar i { display: block; height: 100%; background: var(--cp-cyan); box-shadow: 0 0 8px rgba(51, 247, 252, .5); }
+.cp-mr-card .frac { color: var(--cp-cyan2); font: 700 12px 'Share Tech Mono', monospace; }
+.cp-mr-card .go { position: absolute; right: 11px; bottom: 7px; color: var(--cp-cyan); font-size: 14px; font-weight: 700; }
+
+/* Format C — badge sur l'onglet */
+.cp-mr-nav { display: flex; align-items: center; justify-content: center; gap: 24px; border: 1px solid var(--cp-border); padding: 13px; background: var(--cp-panel); }
+.cp-mr-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  margin-left: 7px;
+  background: var(--cp-yellow);
+  color: #111008;
+  font: 800 11px 'Share Tech Mono', monospace;
+}
+
+@media (max-width: 639px) {
+  .cp-mr-banner { flex-wrap: wrap; }
+  .cp-mr-banner .cta { margin-left: 0; }
+  .cp-mr-cards { grid-template-columns: 1fr; }
+  .cp-mr-nav { gap: 10px; flex-wrap: wrap; }
+}
+
 /* ═══════════ SOUS-ONGLETS DE LA MODALE RÉGLAGES ═══════════ */
 .cp-settings-tabs {
   display: flex;

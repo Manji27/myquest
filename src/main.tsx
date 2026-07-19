@@ -7,12 +7,14 @@ import { FFXDashboard } from './components/ffx/FFXDashboard'
 import { P3RDashboard } from './components/p3r/P3RDashboard'
 import { PragmataDashboard } from './components/pragmata/PragmataDashboard'
 import { CyberpunkDashboard } from './components/cyberpunk/CyberpunkDashboard'
+import { MissionReminderPreview } from './components/cyberpunk/MissionReminderPreview'
 
 // Cyberpunk est l'expérience principale. Les anciennes directions artistiques
 // restent accessibles explicitement pour comparaison et maintenance.
 const params = new URLSearchParams(window.location.search)
 
 function Root() {
+  if (params.has('missiontest')) return <MissionReminderPreview />
   if (params.has('ffx')) return <FFXDashboard />
   if (params.has('p3')) return <P3RDashboard />
   if (params.has('pragmata')) return <PragmataDashboard />
