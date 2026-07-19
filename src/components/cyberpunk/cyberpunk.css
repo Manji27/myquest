@@ -1962,6 +1962,10 @@
   .cp-tab { font-size: 11px; letter-spacing: .02em; gap: 4px; }
   .cp-tab .tico { font-size: 9px; }
   .cp-tab-num { display: none; }
+  /* Zones tactiles plus généreuses sur mobile (cible ~44px). */
+  .cp-tabs { padding-block: 4px 2px; }
+  .cp-tab { padding-block: 11px; }
+  .cp-settings { width: 42px; height: 42px; }
   .cp-view-heading .cp-note { display: none; }
   .cp-root .quest-editor-cyberpunk { padding: 7px; }
   .cp-root .quest-editor-cyberpunk .quest-editor-shell {
