@@ -278,7 +278,7 @@
 .cp-mr-banner.warn { border-left-color: var(--cp-yellow); }
 .cp-mr-banner .ico { color: var(--cp-cyan); font-size: 15px; flex-shrink: 0; }
 .cp-mr-banner.warn .ico { color: var(--cp-yellow); }
-.cp-mr-banner .txt { color: var(--cp-white); font-size: 14.5px; font-weight: 600; letter-spacing: .01em; }
+.cp-mr-banner .txt { flex: 1 1 auto; min-width: 0; color: var(--cp-white); font-size: 14.5px; font-weight: 600; letter-spacing: .01em; line-height: 1.35; }
 .cp-mr-banner .txt .sep { color: var(--cp-red-nav); margin: 0 8px; }
 .cp-mr-banner .txt .hot { color: var(--cp-yellow); font-weight: 700; }
 .cp-mr-banner .cta {
@@ -312,8 +312,10 @@
 }
 
 @media (max-width: 639px) {
-  .cp-mr-banner { flex-wrap: wrap; }
-  .cp-mr-banner .cta { margin-left: 0; }
+  /* Le texte passe à la ligne dans sa colonne ; icône et CTA restent en place. */
+  .cp-mr-banner { align-items: flex-start; }
+  .cp-mr-banner .ico,
+  .cp-mr-banner .cta { padding-top: 1px; }
 }
 
 /* ═══════════ SOUS-ONGLETS DE LA MODALE RÉGLAGES ═══════════ */

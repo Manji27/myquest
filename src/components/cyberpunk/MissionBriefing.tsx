@@ -52,7 +52,7 @@ export function MissionBriefing({
   } else {
     body = (
       <>
-        BRIEFING<span className="sep">·</span>Contrat mensuel : {contract.title}
+        Contrat mensuel : {contract.title}
         <span className="sep">·</span>
         <span className="hot">{done}/{total}</span>
         <span className="sep">·</span>
