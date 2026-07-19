@@ -1956,8 +1956,12 @@
   .cp-contract-empty { align-items: stretch; flex-direction: column; }
   .cp-power-num { min-width: 84px; font-size: 38px; }
   .cp-binary { display: none; }
-  .cp-tabs { gap: 10px; justify-content: space-between; }
-  .cp-tab { font-size: 12px; letter-spacing: .04em; }
+  /* Sur petit écran, les 4 onglets + chiffres décoratifs débordent : on
+     masque les chiffres (pur décor) et on resserre pour tout garder visible. */
+  .cp-tabs { gap: 7px; justify-content: space-between; }
+  .cp-tab { font-size: 11px; letter-spacing: .02em; gap: 4px; }
+  .cp-tab .tico { font-size: 9px; }
+  .cp-tab-num { display: none; }
   .cp-view-heading .cp-note { display: none; }
   .cp-root .quest-editor-cyberpunk { padding: 7px; }
   .cp-root .quest-editor-cyberpunk .quest-editor-shell {
