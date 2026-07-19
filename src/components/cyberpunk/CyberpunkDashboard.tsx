@@ -162,7 +162,7 @@ export function CyberpunkDashboard() {
             aria-current={view === 'jour' ? 'page' : undefined}
             onClick={() => changeView('jour')}
           >
-            <span className="tico">◆</span>Journal
+            <span className="tico">◈</span>Journal
           </button>
           <button
             className={`cp-tab ${view === 'missions' ? 'cp-tab-active' : ''}`}
@@ -176,14 +176,14 @@ export function CyberpunkDashboard() {
             aria-current={view === 'stats' ? 'page' : undefined}
             onClick={() => changeView('stats')}
           >
-            <span className="tico">◇</span>Stats
+            <span className="tico">◈</span>Stats
           </button>
           <button
             className={`cp-tab ${view === 'souvenirs' ? 'cp-tab-active' : ''}`}
             aria-current={view === 'souvenirs' ? 'page' : undefined}
             onClick={() => changeView('souvenirs')}
           >
-            <span className="tico">▣</span>Souvenirs
+            <span className="tico">◈</span>Souvenirs
           </button>
           <span className="cp-tab-num">4</span>
         </nav>
