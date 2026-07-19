@@ -79,3 +79,17 @@ export function daysRemainingInWeek(week: string, now = new Date()): number {
   const offset = (now.getDay() + 6) % 7 // 0 = lundi … 6 = dimanche
   return Math.max(6 - offset, 0) // jours jusqu'à dimanche inclus
 }
+
+/** Clés des `count` prochaines semaines à partir d'aujourd'hui (semaine courante incluse). */
+export function nextWeekKeys(count = 8, from = new Date()): string[] {
+  return Array.from({ length: count }, (_, i) =>
+    weekKey(new Date(from.getFullYear(), from.getMonth(), from.getDate() + i * 7)),
+  )
+}
+
+/** Clés des `count` prochains mois à partir de ce mois (mois courant inclus). */
+export function nextMonthKeys(count = 6, from = new Date()): string[] {
+  return Array.from({ length: count }, (_, i) =>
+    monthKey(new Date(from.getFullYear(), from.getMonth() + i, 1)),
+  )
+}

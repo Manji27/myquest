@@ -6,6 +6,8 @@ import {
   migrateContracts,
   monthKey,
   monthLabel,
+  nextMonthKeys,
+  nextWeekKeys,
   weekKey,
   weekLabel,
 } from '../../lib/contracts'
@@ -19,6 +21,7 @@ type Props = {
 }
 
 type ContractDraft = {
+  period: string
   title: string
   description: string
   steps: string[]
@@ -39,6 +42,7 @@ type Cadence<T extends ContractLike> = {
   keyOf: (contract: T) => string
   label: (key: string) => string
   daysRemaining: (key: string) => number
+  upcoming: () => string[]
   read: (state: AppState) => T[]
   setList: (state: AppState, list: T[]) => AppState
   make: (args: {
@@ -57,6 +61,7 @@ type Cadence<T extends ContractLike> = {
   editorTitle: string
   stepsLabel: string
   configureLabel: string
+  planLabel: string
 }
 
 const EMPTY_STEPS = [
@@ -66,15 +71,9 @@ const EMPTY_STEPS = [
   'Finaliser la mission',
 ]
 
-function toDraft(contract?: ContractLike): ContractDraft {
-  return {
-    title: contract?.title ?? '',
-    description: contract?.description ?? '',
-    steps: contract?.steps.map((step) => step.label) ?? EMPTY_STEPS,
-  }
-}
+type Editing<T> = { mode: 'create' } | { mode: 'edit'; contract: T } | null
 
-// ——————————————————— Board générique ———————————————————
+// ——————————————————— Board / gestionnaire générique ———————————————————
 
 function ContractBoard<T extends ContractLike>({
   state,
@@ -82,32 +81,56 @@ function ContractBoard<T extends ContractLike>({
   cadence,
 }: Props & { cadence: Cadence<T> }) {
   const contracts = useMemo(() => cadence.read(state), [state, cadence])
-  const contract = contracts.find((item) => cadence.keyOf(item) === cadence.currentKey)
-  const archived = contracts.filter(
-    (item) => item.completedAt || cadence.keyOf(item) < cadence.currentKey,
-  )
-  const [editorOpen, setEditorOpen] = useState(false)
-  const [protocolOpen, setProtocolOpen] = useState(false)
-  const [draft, setDraft] = useState<ContractDraft>(() => toDraft(contract))
+  const current = contracts.find((item) => cadence.keyOf(item) === cadence.currentKey)
+  const upcoming = contracts
+    .filter((item) => cadence.keyOf(item) > cadence.currentKey)
+    .sort((a, b) => cadence.keyOf(a).localeCompare(cadence.keyOf(b)))
+  const archived = contracts
+    .filter((item) => item.completedAt || cadence.keyOf(item) < cadence.currentKey)
+    .sort((a, b) => cadence.keyOf(b).localeCompare(cadence.keyOf(a)))
 
-  function openEditor() {
-    setDraft(toDraft(contract))
-    setEditorOpen(true)
+  const [editing, setEditing] = useState<Editing<T>>(null)
+  const [protocolOpen, setProtocolOpen] = useState(false)
+  const [draft, setDraft] = useState<ContractDraft>({
+    period: cadence.currentKey,
+    title: '',
+    description: '',
+    steps: [...EMPTY_STEPS],
+  })
+
+  /** Première période à venir encore libre (sinon la période courante). */
+  function firstFreePeriod(): string {
+    const taken = new Set(contracts.map((item) => cadence.keyOf(item)))
+    return cadence.upcoming().find((key) => !taken.has(key)) ?? cadence.currentKey
   }
 
-  function updateContract(updater: (contract: T) => T) {
-    if (!contract) return
+  function openCreate() {
+    setDraft({ period: firstFreePeriod(), title: '', description: '', steps: [...EMPTY_STEPS] })
+    setEditing({ mode: 'create' })
+  }
+
+  function openEdit(contract: T) {
+    setDraft({
+      period: cadence.keyOf(contract),
+      title: contract.title,
+      description: contract.description,
+      steps: contract.steps.map((step) => step.label),
+    })
+    setEditing({ mode: 'edit', contract })
+  }
+
+  function updateContract(target: T, updater: (contract: T) => T) {
     setState((prev) =>
       cadence.setList(
         prev,
-        cadence.read(prev).map((item) => (item.id === contract.id ? updater(item) : item)),
+        cadence.read(prev).map((item) => (item.id === target.id ? updater(item) : item)),
       ),
     )
   }
 
   function toggleStep(stepId: string) {
-    if (contract?.completedAt) return
-    updateContract((item) => ({
+    if (!current || current.completedAt) return
+    updateContract(current, (item) => ({
       ...item,
       steps: item.steps.map((step) =>
         step.id === stepId ? { ...step, completed: !step.completed } : step,
@@ -116,8 +139,8 @@ function ContractBoard<T extends ContractLike>({
   }
 
   function completeContract() {
-    if (!contract || contract.completedAt || !contract.steps.every((step) => step.completed)) return
-    updateContract((item) => ({ ...item, completedAt: new Date().toISOString() }))
+    if (!current || current.completedAt || !current.steps.every((step) => step.completed)) return
+    updateContract(current, (item) => ({ ...item, completedAt: new Date().toISOString() }))
   }
 
   function saveDraft() {
@@ -125,181 +148,222 @@ function ContractBoard<T extends ContractLike>({
     const description = draft.description.trim()
     const stepLabels = draft.steps.map((step) => step.trim()).filter(Boolean)
     if (!title || !description || stepLabels.length === 0) return
+    const targetPeriod = draft.period
+    const base = editing?.mode === 'edit' ? editing.contract : undefined
 
     setState((prev) => {
       const list = cadence.read(prev)
-      const current = list.find((item) => cadence.keyOf(item) === cadence.currentKey)
+      const existing = base ?? list.find((item) => cadence.keyOf(item) === targetPeriod)
       const steps: ContractStep[] = stepLabels.map((label, index) => ({
-        id: current?.steps[index]?.id ?? `step-${index + 1}`,
+        id: existing?.steps[index]?.id ?? `step-${index + 1}`,
         label,
-        completed: current?.steps[index]?.completed ?? false,
+        completed: existing?.steps[index]?.completed ?? false,
       }))
       const edited = cadence.make({
-        key: cadence.currentKey,
-        id: current?.id ?? cadence.newId(cadence.currentKey),
+        key: targetPeriod,
+        id: existing?.id ?? cadence.newId(targetPeriod),
         title,
         description,
         steps,
-        completedAt: current?.completedAt,
+        completedAt: existing?.completedAt,
       })
-      return cadence.setList(
-        prev,
-        current ? list.map((item) => (item.id === current.id ? edited : item)) : [...list, edited],
+      const without = list.filter(
+        (item) => item.id !== existing?.id && cadence.keyOf(item) !== targetPeriod,
       )
+      return cadence.setList(prev, [...without, edited])
     })
-    setEditorOpen(false)
+    setEditing(null)
   }
 
-  if (!contract) {
-    return (
-      <>
+  function deleteContract(contract: T) {
+    setState((prev) =>
+      cadence.setList(
+        prev,
+        cadence.read(prev).filter((item) => item.id !== contract.id),
+      ),
+    )
+    setEditing(null)
+  }
+
+  const completedSteps = current?.steps.filter((step) => step.completed).length ?? 0
+  const ratio = current && current.steps.length > 0 ? completedSteps / current.steps.length : 0
+  const nextStep = current?.steps.find((step) => !step.completed)
+  const ready = Boolean(current && current.steps.length > 0 && current.steps.every((step) => step.completed))
+  const remainingDays = current ? cadence.daysRemaining(cadence.keyOf(current)) : 0
+
+  return (
+    <div className="cp-contract-manager">
+      {current ? (
+        <section className={`cp-contract ${current.completedAt ? 'is-complete' : ''}`}>
+          <span className="cp-contract-corner" />
+          <div className="cp-contract-topline">
+            <span className="cp-contract-kicker">
+              {cadence.kicker} // {cadence.label(cadence.keyOf(current))}
+            </span>
+            <span className="cp-contract-status">
+              <i />
+              {current.completedAt ? 'Archivé' : 'Mission active'}
+            </span>
+          </div>
+
+          <div
+            className="cp-contract-brief cp-contract-brief-trigger"
+            role="button"
+            tabIndex={0}
+            aria-label={`Ouvrir le protocole du contrat ${current.title}`}
+            onClick={() => setProtocolOpen(true)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault()
+                setProtocolOpen(true)
+              }
+            }}
+          >
+            <span className="cp-contract-index">{cadence.index}</span>
+            <h2>{current.title}</h2>
+            <p>{current.description}</p>
+
+            <div className="cp-contract-next">
+              <span>Prochaine étape</span>
+              <strong>
+                {current.completedAt
+                  ? 'Contrat accompli'
+                  : nextStep?.label ?? 'Prêt pour validation finale'}
+              </strong>
+            </div>
+
+            <div className="cp-contract-meta">
+              <span><b>{completedSteps}</b>/{current.steps.length} étapes</span>
+              <span><b>{Math.round(ratio * 100)}%</b> synchronisé</span>
+              {!current.completedAt && (
+                <span><b>{remainingDays}</b> jour{remainingDays > 1 ? 's' : ''} restant{remainingDays > 1 ? 's' : ''}</span>
+              )}
+            </div>
+            <div className="cp-contract-progress" aria-label={`${completedSteps} étapes sur ${current.steps.length}`}>
+              <i style={{ width: `${ratio * 100}%` }} />
+            </div>
+            <span className="cp-contract-open-hint">Ouvrir le protocole ↗</span>
+          </div>
+
+          <div className="cp-contract-actions">
+            <button
+              type="button"
+              className="cp-contract-secondary cp-contract-icon-btn"
+              onClick={() => openEdit(current)}
+              aria-label="Modifier la mission"
+              title="Modifier la mission"
+            >
+              <img src={editContractIcon} alt="" />
+              <span className="cp-contract-icon-label">Modifier</span>
+            </button>
+            <button
+              type="button"
+              className="cp-contract-secondary cp-contract-icon-btn"
+              onClick={() => setProtocolOpen(true)}
+              aria-label="Voir les étapes"
+              title="Voir les étapes"
+            >
+              <img src={viewStepsIcon} alt="" />
+              <span className="cp-contract-icon-label">Étapes</span>
+            </button>
+            <button
+              type="button"
+              className="cp-contract-primary cp-contract-icon-btn"
+              onClick={completeContract}
+              disabled={!ready || Boolean(current.completedAt)}
+              aria-label={current.completedAt ? 'Mission archivée' : 'Valider la mission'}
+              title={current.completedAt ? 'Mission archivée' : 'Valider la mission'}
+            >
+              <img src={validateMissionIcon} alt="" />
+              <span className="cp-contract-icon-label">
+                {current.completedAt ? 'Archivée' : 'Valider'}
+              </span>
+            </button>
+          </div>
+        </section>
+      ) : (
         <section className="cp-contract cp-contract-empty">
           <div>
             <span className="cp-contract-kicker">{cadence.kicker} // {cadence.label(cadence.currentKey)}</span>
             <h2>{cadence.emptyTitle}</h2>
             <p>{cadence.emptyDesc}</p>
           </div>
-          <button type="button" className="cp-contract-primary" onClick={openEditor}>
+          <button type="button" className="cp-contract-primary" onClick={openCreate}>
             {cadence.configureLabel}
           </button>
         </section>
-        {editorOpen && (
-          <ContractEditor
-            draft={draft}
-            setDraft={setDraft}
-            onCancel={() => setEditorOpen(false)}
-            onSave={saveDraft}
-            title={cadence.editorTitle}
-            stepsLabel={cadence.stepsLabel}
-          />
-        )}
-      </>
-    )
-  }
+      )}
 
-  const completedSteps = contract.steps.filter((step) => step.completed).length
-  const ratio = contract.steps.length > 0 ? completedSteps / contract.steps.length : 0
-  const nextStep = contract.steps.find((step) => !step.completed)
-  const ready = contract.steps.length > 0 && contract.steps.every((step) => step.completed)
-  const remainingDays = cadence.daysRemaining(cadence.keyOf(contract))
-
-  return (
-    <>
-      <section className={`cp-contract ${contract.completedAt ? 'is-complete' : ''}`}>
-        <span className="cp-contract-corner" />
-        <div className="cp-contract-topline">
-          <span className="cp-contract-kicker">
-            {cadence.kicker} // {cadence.label(cadence.keyOf(contract))}
-          </span>
-          <span className="cp-contract-status">
-            <i />
-            {contract.completedAt ? 'Archivé' : 'Mission active'}
-          </span>
-        </div>
-
-        <div
-          className="cp-contract-brief cp-contract-brief-trigger"
-          role="button"
-          tabIndex={0}
-          aria-label={`Ouvrir le protocole du contrat ${contract.title}`}
-          onClick={() => setProtocolOpen(true)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-              event.preventDefault()
-              setProtocolOpen(true)
-            }
-          }}
-        >
-          <span className="cp-contract-index">{cadence.index}</span>
-          <h2>{contract.title}</h2>
-          <p>{contract.description}</p>
-
-          <div className="cp-contract-next">
-            <span>Prochaine étape</span>
-            <strong>
-              {contract.completedAt
-                ? 'Contrat accompli'
-                : nextStep?.label ?? 'Prêt pour validation finale'}
-            </strong>
+      {/* Missions préparées à l'avance (périodes futures) */}
+      {(upcoming.length > 0 || current) && (
+        <div className="cp-contract-plan">
+          <div className="cp-contract-plan-head">
+            <span>À venir · {upcoming.length}</span>
+            <button type="button" className="cp-contract-plan-add" onClick={openCreate}>
+              {cadence.planLabel}
+            </button>
           </div>
-
-          <div className="cp-contract-meta">
-            <span><b>{completedSteps}</b>/{contract.steps.length} étapes</span>
-            <span><b>{Math.round(ratio * 100)}%</b> synchronisé</span>
-            {!contract.completedAt && (
-              <span><b>{remainingDays}</b> jour{remainingDays > 1 ? 's' : ''} restant{remainingDays > 1 ? 's' : ''}</span>
-            )}
-          </div>
-          <div className="cp-contract-progress" aria-label={`${completedSteps} étapes sur ${contract.steps.length}`}>
-            <i style={{ width: `${ratio * 100}%` }} />
-          </div>
-          <span className="cp-contract-open-hint">Ouvrir le protocole ↗</span>
-        </div>
-
-        <div className="cp-contract-actions">
-          <button
-            type="button"
-            className="cp-contract-secondary cp-contract-icon-btn"
-            onClick={openEditor}
-            aria-label="Modifier le contrat"
-            title="Modifier le contrat"
-          >
-            <img src={editContractIcon} alt="" />
-            <span className="cp-contract-icon-label">Modifier</span>
-          </button>
-          <button
-            type="button"
-            className="cp-contract-secondary cp-contract-icon-btn"
-            onClick={() => setProtocolOpen(true)}
-            aria-label="Voir les étapes"
-            title="Voir les étapes"
-          >
-            <img src={viewStepsIcon} alt="" />
-            <span className="cp-contract-icon-label">Étapes</span>
-          </button>
-          <button
-            type="button"
-            className="cp-contract-primary cp-contract-icon-btn"
-            onClick={completeContract}
-            disabled={!ready || Boolean(contract.completedAt)}
-            aria-label={contract.completedAt ? 'Mission archivée' : 'Valider la mission'}
-            title={contract.completedAt ? 'Mission archivée' : 'Valider la mission'}
-          >
-            <img src={validateMissionIcon} alt="" />
-            <span className="cp-contract-icon-label">
-              {contract.completedAt ? 'Archivée' : 'Valider'}
-            </span>
-          </button>
-        </div>
-
-        {archived.length > 0 && (
-          <details className="cp-contract-archives">
-            <summary>Archives · {archived.length}</summary>
-            <div>
-              {archived.map((item) => (
-                <span key={item.id}>
-                  <b>{item.title}</b>
-                  <small>{cadence.label(cadence.keyOf(item))} · {item.completedAt ? 'accompli' : 'expiré'}</small>
-                </span>
-              ))}
+          {upcoming.map((item) => (
+            <div key={item.id} className="cp-contract-plan-row">
+              <button
+                type="button"
+                className="cp-contract-plan-main"
+                onClick={() => openEdit(item)}
+                aria-label={`Modifier la mission ${item.title}`}
+              >
+                <span className="cp-contract-plan-period">{cadence.label(cadence.keyOf(item))}</span>
+                <span className="cp-contract-plan-title">{item.title}</span>
+              </button>
+              <button
+                type="button"
+                className="cp-contract-plan-del"
+                onClick={() => deleteContract(item)}
+                aria-label={`Supprimer la mission ${item.title}`}
+                title="Supprimer"
+              >
+                ✕
+              </button>
             </div>
-          </details>
-        )}
-      </section>
+          ))}
+        </div>
+      )}
 
-      {editorOpen && (
+      {archived.length > 0 && (
+        <details className="cp-contract-archives">
+          <summary>Archives · {archived.length}</summary>
+          <div>
+            {archived.map((item) => (
+              <span key={item.id}>
+                <b>{item.title}</b>
+                <small>{cadence.label(cadence.keyOf(item))} · {item.completedAt ? 'accompli' : 'expiré'}</small>
+              </span>
+            ))}
+          </div>
+        </details>
+      )}
+
+      {editing && (
         <ContractEditor
           draft={draft}
           setDraft={setDraft}
-          onCancel={() => setEditorOpen(false)}
+          onCancel={() => setEditing(null)}
           onSave={saveDraft}
+          onDelete={editing.mode === 'edit' ? () => deleteContract(editing.contract) : undefined}
           title={cadence.editorTitle}
           stepsLabel={cadence.stepsLabel}
+          periods={editing.mode === 'create'
+            ? cadence.upcoming().map((key) => ({
+                key,
+                label: cadence.label(key),
+                taken: contracts.some((item) => cadence.keyOf(item) === key),
+              }))
+            : undefined}
+          fixedPeriodLabel={editing.mode === 'edit' ? cadence.label(draft.period) : undefined}
         />
       )}
-      {protocolOpen && (
+      {protocolOpen && current && (
         <ContractProtocol
-          contract={contract}
+          contract={current}
           completedSteps={completedSteps}
           onToggleStep={toggleStep}
           onComplete={completeContract}
@@ -308,7 +372,7 @@ function ContractBoard<T extends ContractLike>({
           stepsLabel={cadence.stepsLabel}
         />
       )}
-    </>
+    </div>
   )
 }
 
@@ -319,6 +383,7 @@ const monthlyCadence: Cadence<MonthlyContract> = {
   keyOf: (c) => c.month,
   label: monthLabel,
   daysRemaining: daysRemainingInMonth,
+  upcoming: () => nextMonthKeys(6),
   read: (state) => migrateContracts(state.contracts).monthly,
   setList: (state, list) => ({
     ...state,
@@ -340,6 +405,7 @@ const monthlyCadence: Cadence<MonthlyContract> = {
   editorTitle: 'Mission du mois',
   stepsLabel: 'Étapes de la mission',
   configureLabel: '+ Configurer le contrat mensuel',
+  planLabel: '+ Préparer un mois',
 }
 
 const weeklyCadence: Cadence<WeeklyContract> = {
@@ -347,6 +413,7 @@ const weeklyCadence: Cadence<WeeklyContract> = {
   keyOf: (c) => c.week,
   label: weekLabel,
   daysRemaining: daysRemainingInWeek,
+  upcoming: () => nextWeekKeys(8),
   read: (state) => migrateContracts(state.contracts).weekly,
   setList: (state, list) => ({
     ...state,
@@ -368,6 +435,7 @@ const weeklyCadence: Cadence<WeeklyContract> = {
   editorTitle: 'Mission de la semaine',
   stepsLabel: 'Étapes de la semaine',
   configureLabel: '+ Configurer la mission hebdo',
+  planLabel: '+ Préparer une semaine',
 }
 
 export function MonthlyContractBoard({ state, setState }: Props) {
@@ -450,15 +518,23 @@ function ContractEditor({
   setDraft,
   onCancel,
   onSave,
+  onDelete,
   title,
   stepsLabel,
+  periods,
+  fixedPeriodLabel,
 }: {
   draft: ContractDraft
   setDraft: React.Dispatch<React.SetStateAction<ContractDraft>>
   onCancel: () => void
   onSave: () => void
+  onDelete?: () => void
   title: string
   stepsLabel: string
+  /** Liste des périodes sélectionnables (création) ; absente en édition. */
+  periods?: { key: string; label: string; taken: boolean }[]
+  /** Libellé de période figé (édition d'une mission existante). */
+  fixedPeriodLabel?: string
 }) {
   const valid = draft.title.trim() && draft.description.trim() && draft.steps.some((step) => step.trim())
 
@@ -472,6 +548,31 @@ function ContractEditor({
           </div>
           <button type="button" onClick={onCancel} aria-label="Fermer">×</button>
         </div>
+
+        {periods ? (
+          <div className="cp-contract-period">
+            <span>Période</span>
+            <div className="cp-contract-period-chips">
+              {periods.map((p) => (
+                <button
+                  type="button"
+                  key={p.key}
+                  className={`cp-contract-period-chip ${draft.period === p.key ? 'is-active' : ''} ${p.taken ? 'is-taken' : ''}`}
+                  onClick={() => setDraft((current) => ({ ...current, period: p.key }))}
+                >
+                  {p.label}{p.taken ? ' ·' : ''}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          fixedPeriodLabel && (
+            <div className="cp-contract-period">
+              <span>Période</span>
+              <div className="cp-contract-period-fixed">{fixedPeriodLabel}</div>
+            </div>
+          )
+        )}
 
         <label>
           Nom du contrat
@@ -510,6 +611,9 @@ function ContractEditor({
         </div>
 
         <div className="cp-contract-editor-actions">
+          {onDelete && (
+            <button type="button" className="cp-contract-editor-del" onClick={onDelete}>Supprimer</button>
+          )}
           <button type="button" onClick={onCancel}>Annuler</button>
           <button type="button" onClick={onSave} disabled={!valid}>Enregistrer le contrat</button>
         </div>
