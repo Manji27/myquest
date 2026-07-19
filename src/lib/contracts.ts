@@ -1,4 +1,4 @@
-import type { ContractState, MonthlyContract } from '../types'
+import type { ContractState, MonthlyContract, WeeklyContract } from '../types'
 
 export const FIRST_CONTACT_CONTRACT: MonthlyContract = {
   id: 'monthly-2026-07-first-contact',
@@ -13,7 +13,7 @@ export const FIRST_CONTACT_CONTRACT: MonthlyContract = {
   ],
 }
 
-function cloneContract(contract: MonthlyContract): MonthlyContract {
+function cloneContract<T extends MonthlyContract | WeeklyContract>(contract: T): T {
   return {
     ...contract,
     steps: contract.steps.map((step) => ({ ...step })),
@@ -21,7 +21,7 @@ function cloneContract(contract: MonthlyContract): MonthlyContract {
 }
 
 export function initialContracts(): ContractState {
-  return { monthly: [cloneContract(FIRST_CONTACT_CONTRACT)] }
+  return { monthly: [cloneContract(FIRST_CONTACT_CONTRACT)], weekly: [] }
 }
 
 /** Ajoute les contrats livrés avec l'app sans écraser la progression existante. */
@@ -30,7 +30,8 @@ export function migrateContracts(contracts?: ContractState): ContractState {
   if (!monthly.some((contract) => contract.id === FIRST_CONTACT_CONTRACT.id)) {
     monthly.push(cloneContract(FIRST_CONTACT_CONTRACT))
   }
-  return { monthly }
+  const weekly = contracts?.weekly?.map(cloneContract) ?? []
+  return { monthly, weekly }
 }
 
 export function monthKey(date = new Date()): string {
@@ -50,4 +51,31 @@ export function daysRemainingInMonth(month: string, now = new Date()): number {
   if (month !== monthKey(now)) return 0
   const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
   return Math.max(lastDay - now.getDate(), 0)
+}
+
+/** Lundi (00:00 local) de la semaine contenant `date`. */
+function mondayOf(date: Date): Date {
+  const d = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+  const offset = (d.getDay() + 6) % 7 // 0 = lundi … 6 = dimanche
+  d.setDate(d.getDate() - offset)
+  return d
+}
+
+/** Clé de semaine basée sur son lundi : `w-YYYY-MM-DD`. */
+export function weekKey(date = new Date()): string {
+  const m = mondayOf(date)
+  return `w-${m.getFullYear()}-${String(m.getMonth() + 1).padStart(2, '0')}-${String(m.getDate()).padStart(2, '0')}`
+}
+
+export function weekLabel(week: string): string {
+  const [, year, month, day] = week.split('-').map(Number)
+  const monday = new Date(year, month - 1, day)
+  const label = new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(monday)
+  return `Semaine du ${label}`
+}
+
+export function daysRemainingInWeek(week: string, now = new Date()): number {
+  if (week !== weekKey(now)) return 0
+  const offset = (now.getDay() + 6) % 7 // 0 = lundi … 6 = dimanche
+  return Math.max(6 - offset, 0) // jours jusqu'à dimanche inclus
 }

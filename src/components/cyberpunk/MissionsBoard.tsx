@@ -4,7 +4,7 @@ import { computeStats } from '../../lib/stats'
 import { ACHIEVEMENTS, isUnlocked } from '../../lib/achievements'
 import { LifepathCard } from '../LifepathCard'
 import { CYBERPUNK_ACHIEVEMENT_ART } from './achievementArt'
-import { MonthlyContractBoard } from './MonthlyContract'
+import { MonthlyContractBoard, WeeklyContractBoard } from './MonthlyContract'
 
 type Tab = 'contrats' | 'succes'
 
@@ -60,7 +60,10 @@ export function MissionsBoard({
       </nav>
 
       {tab === 'contrats' ? (
-        <MonthlyContractBoard state={state} setState={setState} />
+        <div className="cp-contract-stack">
+          <WeeklyContractBoard state={state} setState={setState} />
+          <MonthlyContractBoard state={state} setState={setState} />
+        </div>
       ) : (
         <div className="cp-missions-grid">
           {ACHIEVEMENTS.map((a) => {

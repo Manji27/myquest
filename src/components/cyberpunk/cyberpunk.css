@@ -283,6 +283,10 @@
 .cp-mr-banner .txt.cp-brief-structured { display: flex; align-items: baseline; gap: 8px; }
 .cp-mr-banner .b-main { flex: 0 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cp-mr-banner .b-meta { flex-shrink: 0; white-space: nowrap; }
+.cp-mr-banner .b-compact { white-space: nowrap; }
+
+/* Empilement des deux contrats (hebdo puis mensuel) dans Missions › Contrats. */
+.cp-contract-stack { display: flex; flex-direction: column; gap: 18px; }
 .cp-mr-banner .txt .sep { color: var(--cp-red-nav); margin: 0 8px; }
 .cp-mr-banner .txt .hot { color: var(--cp-yellow); font-weight: 700; }
 .cp-mr-banner .cta {

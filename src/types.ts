@@ -38,8 +38,19 @@ export type MonthlyContract = {
   completedAt?: string
 }
 
+export type WeeklyContract = {
+  id: string
+  /** Semaine concernée, identifiée par son lundi : `w-YYYY-MM-DD`. */
+  week: string
+  title: string
+  description: string
+  steps: ContractStep[]
+  completedAt?: string
+}
+
 export type ContractState = {
   monthly: MonthlyContract[]
+  weekly: WeeklyContract[]
 }
 
 export type AppState = {

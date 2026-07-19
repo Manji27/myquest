@@ -4,6 +4,7 @@ import type {
   DayLog,
   MonthlyContract,
   QuestDef,
+  WeeklyContract,
 } from '../types'
 
 type Clocks = Record<string, string>
@@ -81,13 +82,14 @@ function mergeLogs(a: AppState, b: AppState): Record<string, DayLog> {
   return out
 }
 
-function mergeContracts(a: AppState, b: AppState): ContractState | undefined {
-  const aa = a.contracts?.monthly ?? []
-  const bb = b.contracts?.monthly ?? []
-  if (aa.length === 0 && bb.length === 0) return undefined
+function mergeContractSlice<T extends MonthlyContract | WeeklyContract>(
+  aa: T[],
+  bb: T[],
+  a: AppState,
+  b: AppState,
+): T[] {
   const ids = new Set([...aa.map((item) => item.id), ...bb.map((item) => item.id)])
-  const monthly: MonthlyContract[] = []
-
+  const out: T[] = []
   for (const id of ids) {
     const ca = aa.find((item) => item.id === id)
     const cb = bb.find((item) => item.id === id)
@@ -104,13 +106,25 @@ function mergeContracts(a: AppState, b: AppState): ContractState | undefined {
       const chosen = preferBForKey(a, b, `contract:${id}:step:${stepId}`) ? sb : sa
       return chosen ? [chosen] : []
     })
-    monthly.push({
+    out.push({
       ...preferred,
       completedAt: preferred.completedAt ?? other?.completedAt,
       steps,
     })
   }
-  return { monthly }
+  return out
+}
+
+function mergeContracts(a: AppState, b: AppState): ContractState | undefined {
+  const am = a.contracts?.monthly ?? []
+  const bm = b.contracts?.monthly ?? []
+  const aw = a.contracts?.weekly ?? []
+  const bw = b.contracts?.weekly ?? []
+  if (am.length === 0 && bm.length === 0 && aw.length === 0 && bw.length === 0) return undefined
+  return {
+    monthly: mergeContractSlice(am, bm, a, b),
+    weekly: mergeContractSlice(aw, bw, a, b),
+  }
 }
 
 /** Fusion déterministe et compatible avec les anciennes sauvegardes. */

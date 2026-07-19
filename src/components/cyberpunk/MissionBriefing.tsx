@@ -1,16 +1,19 @@
 import { useMemo } from 'react'
 import type { ReactNode } from 'react'
 import type { AppState } from '../../types'
-import { migrateContracts, monthKey, daysRemainingInMonth } from '../../lib/contracts'
+import {
+  migrateContracts,
+  monthKey,
+  weekKey,
+  daysRemainingInMonth,
+  daysRemainingInWeek,
+} from '../../lib/contracts'
 
 /**
- * Bandeau « briefing » (Format A, ton Night City) affiché en tête du Journal :
- * rappelle l'état du contrat mensuel et renvoie vers l'onglet Missions d'un tap.
- * S'adapte à l'état (aucun contrat / en cours / deadline proche / bouclé).
- *
- * Ne couvre pour l'instant que le contrat MENSUEL (seul existant). La partie
- * « Hebdo x/y » viendra se glisser devant une fois les missions hebdomadaires
- * créées.
+ * Bandeau « briefing » (ton Night City) en tête du Journal : rappelle l'état
+ * des missions hebdo & mensuelle et renvoie vers l'onglet Missions d'un tap.
+ * S'adapte : deux missions actives / une seule / tout bouclé, avec alerte
+ * lorsque la deadline approche.
  */
 export function MissionBriefing({
   state,
@@ -19,49 +22,55 @@ export function MissionBriefing({
   state: AppState
   onOpen: () => void
 }) {
-  const currentMonth = monthKey()
-  const contract = useMemo(
-    () => migrateContracts(state.contracts).monthly.find((c) => c.month === currentMonth),
-    [state.contracts, currentMonth],
-  )
+  const { weekly, monthly } = useMemo(() => {
+    const c = migrateContracts(state.contracts)
+    return {
+      weekly: c.weekly.find((x) => x.week === weekKey()),
+      monthly: c.monthly.find((x) => x.month === monthKey()),
+    }
+  }, [state.contracts])
 
-  const daysLeft = daysRemainingInMonth(currentMonth)
-  const done = contract?.steps.filter((s) => s.completed).length ?? 0
-  const total = contract?.steps.length ?? 0
-  const completed = Boolean(contract?.completedAt)
-  const urgent = Boolean(contract) && !completed && daysLeft <= 3
+  const wActive = Boolean(weekly && !weekly.completedAt)
+  const mActive = Boolean(monthly && !monthly.completedAt)
+  const wDone = weekly?.steps.filter((s) => s.completed).length ?? 0
+  const wTotal = weekly?.steps.length ?? 0
+  const mDone = monthly?.steps.filter((s) => s.completed).length ?? 0
+  const mTotal = monthly?.steps.length ?? 0
+  const wDays = weekly ? daysRemainingInWeek(weekly.week) : 0
+  const mDays = monthly ? daysRemainingInMonth(monthly.month) : 0
+  const urgent = (wActive && wDays <= 2) || (mActive && mDays <= 3)
+  const activeCount = (wActive ? 1 : 0) + (mActive ? 1 : 0)
 
   let ico = '◈'
   let structured = false
   let body: ReactNode
-  if (!contract) {
-    body = <>Aucun contrat ce mois — définis ta mission, choom</>
-  } else if (completed) {
+
+  if (activeCount === 0) {
     ico = '✓'
-    body = <>Contrat mensuel bouclé — rien à signaler, choom</>
-  } else if (urgent) {
-    ico = '⚠'
-    // Titre insécable + méta fixe : tout tient sur une ligne, le titre se
-    // tronque par « … » seulement s'il est très long.
-    structured = true
+    body = <>Missions à jour — rien à signaler, choom</>
+  } else if (activeCount === 2) {
+    if (urgent) ico = '⚠'
     body = (
-      <>
-        <span className="b-main">{contract.title}</span>
-        <span className="b-meta">
-          plus que <span className="hot">{daysLeft} j</span> !
-        </span>
-      </>
+      <span className="b-compact">
+        Hebdo <span className="hot">{wDone}/{wTotal}</span>
+        <span className="sep">·</span>
+        Mensuel <span className="hot">{mDone}/{mTotal}</span>
+      </span>
     )
   } else {
     structured = true
+    if (urgent) ico = '⚠'
+    const active = wActive
+      ? { title: weekly!.title, done: wDone, total: wTotal, days: wDays }
+      : { title: monthly!.title, done: mDone, total: mTotal, days: mDays }
     body = (
       <>
-        <span className="b-main">{contract.title}</span>
+        <span className="b-main">{active.title}</span>
         <span className="b-meta">
           <span className="sep">·</span>
-          <span className="hot">{done}/{total}</span>
+          <span className="hot">{active.done}/{active.total}</span>
           <span className="sep">·</span>
-          <span className="hot">{daysLeft} j</span>
+          <span className="hot">{active.days} j</span>
         </span>
       </>
     )
