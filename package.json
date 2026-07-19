@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "npm run build && wrangler dev",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run build && wrangler deploy",
+    "test": "vitest run"
   },
   "dependencies": {
     "@block65/webcrypto-web-push": "^1.0.2",
@@ -31,6 +32,7 @@
     "typescript": "^5.7.2",
     "vite": "^6.0.0",
     "vite-plugin-pwa": "^0.21.1",
+    "vitest": "^2.1.9",
     "wrangler": "^4.112.0"
   }
 }

@@ -121,19 +121,27 @@ function stampChanges(previous: AppState, next: AppState, now: number): AppState
     }
   }
 
-  for (const id of ids(previous.contracts?.monthly, next.contracts?.monthly)) {
-    const before = previous.contracts?.monthly.find((item) => item.id === id)
-    const after = next.contracts?.monthly.find((item) => item.id === id)
-    if (!before || !after) {
-      touch(`contract:${id}`)
-      continue
-    }
-    const beforeBase = { ...before, steps: undefined }
-    const afterBase = { ...after, steps: undefined }
-    if (!same(beforeBase, afterBase)) touch(`contract:${id}`)
-    for (const stepId of ids(before.steps, after.steps)) {
-      if (!same(before.steps.find((step) => step.id === stepId), after.steps.find((step) => step.id === stepId))) {
-        touch(`contract:${id}:step:${stepId}`)
+  // Estampille les deux cadences de contrats (mensuel ET hebdo).
+  type StampContract = { id: string; steps: { id: string }[] }
+  const contractSlices: Array<readonly [StampContract[] | undefined, StampContract[] | undefined]> = [
+    [previous.contracts?.monthly, next.contracts?.monthly],
+    [previous.contracts?.weekly, next.contracts?.weekly],
+  ]
+  for (const [prevList, nextList] of contractSlices) {
+    for (const id of ids(prevList, nextList)) {
+      const before = prevList?.find((item) => item.id === id)
+      const after = nextList?.find((item) => item.id === id)
+      if (!before || !after) {
+        touch(`contract:${id}`)
+        continue
+      }
+      const beforeBase = { ...before, steps: undefined }
+      const afterBase = { ...after, steps: undefined }
+      if (!same(beforeBase, afterBase)) touch(`contract:${id}`)
+      for (const stepId of ids(before.steps, after.steps)) {
+        if (!same(before.steps.find((step) => step.id === stepId), after.steps.find((step) => step.id === stepId))) {
+          touch(`contract:${id}:step:${stepId}`)
+        }
       }
     }
   }

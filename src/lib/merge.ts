@@ -64,8 +64,10 @@ function mergeLogs(a: AppState, b: AppState): Record<string, DayLog> {
     const la = a.logs[date]
     const lb = b.logs[date]
     if (!la || !lb) {
-      const chosen = preferBForKey(a, b, `log:${date}`) ? lb : la
-      if (chosen) out[date] = chosen
+      // Un jour de log ne se supprime jamais : on garde systématiquement le
+      // côté qui le possède, même si l'autre appareil est globalement plus
+      // récent (évite toute perte d'historique / de validation).
+      out[date] = (la ?? lb)!
       continue
     }
 
