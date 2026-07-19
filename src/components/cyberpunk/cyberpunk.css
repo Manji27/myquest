@@ -302,17 +302,50 @@
   cursor: pointer;
   text-align: left;
   transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+  /* pulsation en boucle pour attirer l'œil */
+  animation: cp-brief-pulse 1.9s ease-in-out infinite;
 }
 .cp-briefing:hover,
 .cp-briefing:focus-visible {
   border-color: var(--cp-cyan);
-  box-shadow: 0 0 14px rgba(51, 247, 252, .18);
   outline: none;
 }
-.cp-briefing.warn:hover,
-.cp-briefing.warn:focus-visible {
-  border-color: var(--cp-yellow);
-  box-shadow: 0 0 14px rgba(255, 214, 64, .2);
+.cp-briefing.warn {
+  animation-name: cp-brief-pulse-warn;
+}
+/* l'icône diamant pulse aussi (halo) */
+.cp-briefing .ico { animation: cp-brief-ico 1.9s ease-in-out infinite; }
+
+@keyframes cp-brief-pulse {
+  0%, 100% {
+    border-left-color: var(--cp-cyan);
+    box-shadow: 0 0 0 0 rgba(51, 247, 252, 0);
+  }
+  50% {
+    border-left-color: #b9fbff;
+    box-shadow: 0 0 18px 1px rgba(51, 247, 252, .4);
+  }
+}
+@keyframes cp-brief-pulse-warn {
+  0%, 100% {
+    border-left-color: var(--cp-yellow);
+    box-shadow: 0 0 0 0 rgba(255, 214, 64, 0);
+  }
+  50% {
+    border-left-color: #ffe89a;
+    box-shadow: 0 0 18px 1px rgba(255, 214, 64, .45);
+  }
+}
+@keyframes cp-brief-ico {
+  0%, 100% { text-shadow: 0 0 4px rgba(51, 247, 252, .35); opacity: .85; }
+  50% { text-shadow: 0 0 13px rgba(51, 247, 252, .95); opacity: 1; }
+}
+
+/* Respecte les préférences d'accessibilité : pas d'animation si l'utilisateur
+   a demandé à réduire les mouvements. */
+@media (prefers-reduced-motion: reduce) {
+  .cp-briefing,
+  .cp-briefing .ico { animation: none; }
 }
 
 
