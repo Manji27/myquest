@@ -17,6 +17,12 @@ export default defineConfig({
     includeAssets: ['favicon.svg', 'push-handler.js'],
     // importe le handler de notifications push dans le service worker généré
     workbox: {
+      // Active le nouveau SW immédiatement, sans attendre un message du client.
+      // Indispensable pour sortir les clients déjà installés (mobile) du
+      // deadlock : l'ancien registerSW.js minimal n'envoie jamais SKIP_WAITING,
+      // donc sans skipWaiting inconditionnel le nouveau SW reste en « waiting ».
+      skipWaiting: true,
+      clientsClaim: true,
       importScripts: ['push-handler.js'],
       // L'application installée doit embarquer ses visuels. Sans ces motifs,
       // Workbox ne précachait que le JS/CSS/HTML et les icônes dépendaient
