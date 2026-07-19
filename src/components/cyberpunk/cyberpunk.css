@@ -1452,17 +1452,28 @@
   background: rgba(255, 214, 64, .1);
   color: var(--cp-yellow);
 }
-/* Boutons d'action à icône : compacts, l'icône centrée, tout tient sur une
-   seule ligne (y compris sur mobile). Le texte est porté par aria-label/title. */
+/* Boutons d'action à icône + court libellé empilés : compacts, tout tient sur
+   une seule ligne (y compris sur mobile). aria-label/title portent le texte
+   complet. */
 .cp-contract-icon-btn {
+  flex-direction: column;
+  gap: 4px;
   min-width: 0;
-  padding: 7px 12px;
+  padding: 7px 10px;
 }
 .cp-contract-icon-btn img {
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
   display: block;
+}
+.cp-contract-icon-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
 }
 .cp-contract-primary.cp-contract-icon-btn:disabled img { opacity: .4; }
 .cp-contract-primary:hover:not(:disabled),

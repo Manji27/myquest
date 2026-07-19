@@ -211,6 +211,7 @@ export function MonthlyContractBoard({ state, setState }: Props) {
             title="Modifier le contrat"
           >
             <img src={editContractIcon} alt="" />
+            <span className="cp-contract-icon-label">Modifier</span>
           </button>
           <button
             type="button"
@@ -220,6 +221,7 @@ export function MonthlyContractBoard({ state, setState }: Props) {
             title="Voir les étapes"
           >
             <img src={viewStepsIcon} alt="" />
+            <span className="cp-contract-icon-label">Étapes</span>
           </button>
           <button
             type="button"
@@ -230,6 +232,9 @@ export function MonthlyContractBoard({ state, setState }: Props) {
             title={contract.completedAt ? 'Mission archivée' : 'Valider la mission'}
           >
             <img src={validateMissionIcon} alt="" />
+            <span className="cp-contract-icon-label">
+              {contract.completedAt ? 'Archivée' : 'Valider'}
+            </span>
           </button>
         </div>
 
