@@ -30,6 +30,7 @@ export function CyberpunkDashboard() {
   const cloud = useCloudSync(state, applyRemote)
   const [view, setView] = useState<'jour' | 'missions' | 'stats' | 'souvenirs'>('jour')
   const [editorOpen, setEditorOpen] = useState(false)
+  const [reordering, setReordering] = useState(false)
   const [shardSaved, setShardSaved] = useState(false)
   const shardSavedTimer = useRef<number | undefined>(undefined)
   const shardInputRef = useRef<HTMLTextAreaElement>(null)
@@ -120,6 +121,29 @@ export function CyberpunkDashboard() {
         ? prevLog.completed.filter((x) => x !== id)
         : [...prevLog.completed, id]
       return { ...prev, logs: { ...prev.logs, [selectedDate]: { ...prevLog, completed } } }
+    })
+  }
+
+  /**
+   * Déplace une quête d'un cran (haut/bas) dans l'ordre des quêtes du jour.
+   * On réordonne la sous-liste visible puis on la réinjecte dans `quests`
+   * complet, en gardant les quêtes non affichées à leur place.
+   */
+  function moveQuest(id: string, direction: -1 | 1) {
+    setState((prev) => {
+      const visibleIds = questsForDate(prev.quests, selectedDate).map((q) => q.id)
+      const from = visibleIds.indexOf(id)
+      const to = from + direction
+      if (from < 0 || to < 0 || to >= visibleIds.length) return prev
+      const reordered = [...visibleIds]
+      ;[reordered[from], reordered[to]] = [reordered[to], reordered[from]]
+      const visibleSet = new Set(visibleIds)
+      const byId = new Map(prev.quests.map((q) => [q.id, q]))
+      const queue = [...reordered]
+      const quests = prev.quests.map((q) =>
+        visibleSet.has(q.id) ? byId.get(queue.shift()!)! : q,
+      )
+      return { ...prev, quests }
     })
   }
 
@@ -318,21 +342,31 @@ export function CyberpunkDashboard() {
               <span className="cp-fold" />
               <div className="cp-panel-head">
                 <h3>◆ Quêtes du jour</h3>
-                <span className="sub">{done.length}/{dayQuests.length} accomplies</span>
+                {dayQuests.length > 1 ? (
+                  <button
+                    type="button"
+                    className={`cp-reorder-toggle ${reordering ? 'is-active' : ''}`}
+                    onClick={() => setReordering((r) => !r)}
+                  >
+                    {reordering ? '✓ Terminé' : '⇅ Réorganiser'}
+                  </button>
+                ) : (
+                  <span className="sub">{done.length}/{dayQuests.length} accomplies</span>
+                )}
               </div>
-              <div className="cp-rows">
-                {dayQuests.map((q) => {
+              <div className={`cp-rows ${reordering ? 'is-reordering' : ''}`}>
+                {dayQuests.map((q, i) => {
                   const isDone = log.completed.includes(q.id)
                   const cfg = DIFFICULTY[q.difficulty]
                   const iconImage = questIconImages[q.id]
                   return (
                     <div
                       key={q.id}
-                      className={`cp-row ${isDone ? 'cp-row-done' : ''}`}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => toggleQuest(q.id)}
-                      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && toggleQuest(q.id)}
+                      className={`cp-row ${isDone ? 'cp-row-done' : ''} ${reordering ? 'cp-row-reorder' : ''}`}
+                      role={reordering ? undefined : 'button'}
+                      tabIndex={reordering ? undefined : 0}
+                      onClick={reordering ? undefined : () => toggleQuest(q.id)}
+                      onKeyDown={reordering ? undefined : (e) => (e.key === 'Enter' || e.key === ' ') && toggleQuest(q.id)}
                     >
                       <span className="cp-row-icon">
                         {iconImage ? <img src={iconImage} alt="" /> : q.icon}
@@ -344,8 +378,27 @@ export function CyberpunkDashboard() {
                           <span>{cfg.label}</span>
                         </div>
                       </div>
-                      {isDone && <span className="cp-cursor" />}
-                      <span className="cp-row-check">{isDone ? '✓' : ''}</span>
+                      {reordering ? (
+                        <div className="cp-reorder-controls">
+                          <button
+                            type="button"
+                            onClick={() => moveQuest(q.id, -1)}
+                            disabled={i === 0}
+                            aria-label={`Monter ${q.label}`}
+                          >▲</button>
+                          <button
+                            type="button"
+                            onClick={() => moveQuest(q.id, 1)}
+                            disabled={i === dayQuests.length - 1}
+                            aria-label={`Descendre ${q.label}`}
+                          >▼</button>
+                        </div>
+                      ) : (
+                        <>
+                          {isDone && <span className="cp-cursor" />}
+                          <span className="cp-row-check">{isDone ? '✓' : ''}</span>
+                        </>
+                      )}
                     </div>
                   )
                 })}

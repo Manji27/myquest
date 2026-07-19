@@ -682,6 +682,42 @@
 
 /* ═══════════ CARTES DE QUÊTE ═══════════ */
 .cp-rows { display: flex; flex-direction: column; gap: 8px; }
+
+/* ——— Mode réorganisation des quêtes du jour ——— */
+.cp-reorder-toggle {
+  border: 1px solid var(--cp-border);
+  background: rgba(11, 10, 16, .6);
+  color: var(--cp-sky-onred);
+  cursor: pointer;
+  font: 700 10px 'Share Tech Mono', monospace;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  white-space: nowrap;
+}
+.cp-reorder-toggle:hover,
+.cp-reorder-toggle:focus-visible { border-color: var(--cp-border-hot); color: var(--cp-cyan); outline: none; }
+.cp-reorder-toggle.is-active {
+  border-color: var(--cp-cyan);
+  color: var(--cp-cyan);
+  box-shadow: inset 0 0 0 1px rgba(94, 242, 255, .35);
+}
+.cp-row-reorder { cursor: default; }
+.cp-reorder-controls { display: flex; flex-direction: column; gap: 4px; flex-shrink: 0; margin-left: auto; }
+.cp-reorder-controls button {
+  width: 44px;
+  height: 30px;
+  border: 1px solid var(--cp-border);
+  background: rgba(94, 242, 255, .07);
+  color: var(--cp-cyan);
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+}
+.cp-reorder-controls button:hover:not(:disabled) { background: rgba(94, 242, 255, .2); border-color: var(--cp-cyan); }
+.cp-reorder-controls button:disabled { opacity: .28; cursor: not-allowed; }
 .cp-row {
   position: relative;
   display: flex;
