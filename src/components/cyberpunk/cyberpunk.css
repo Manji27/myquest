@@ -620,6 +620,46 @@
   border-color: var(--cp-cyan);
   box-shadow: 0 0 12px rgba(51, 247, 252, 0.18);
 }
+.cp-shard-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+}
+.cp-shard-saved {
+  color: var(--cp-cyan);
+  font: 700 12px/1 'Share Tech Mono', monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-shadow: 0 0 9px rgba(94, 242, 255, 0.7);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.cp-shard-saved.is-visible { opacity: 1; }
+.cp-shard-save {
+  border: 1px solid var(--cp-cyan);
+  background: rgba(94, 242, 255, 0.08);
+  color: var(--cp-cyan);
+  cursor: pointer;
+  font: 700 13px/1 'Rajdhani', system-ui, sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 9px 22px;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+.cp-shard-save:hover:not(:disabled),
+.cp-shard-save:focus-visible:not(:disabled) {
+  background: rgba(94, 242, 255, 0.18);
+  box-shadow: 0 0 12px rgba(51, 247, 252, 0.25);
+}
+.cp-shard-save:focus-visible { outline: 1px solid var(--cp-cyan); outline-offset: 2px; }
+.cp-shard-save:disabled {
+  border-color: rgba(73, 216, 230, 0.25);
+  color: rgba(73, 216, 230, 0.35);
+  background: transparent;
+  cursor: not-allowed;
+}
 
 /* ═══════════ VUES PARTAGÉES AVEC L'APP PRINCIPALE ═══════════ */
 .cp-day-nav {
@@ -1368,6 +1408,7 @@
 }
 .cp-contract-actions {
   justify-content: flex-end;
+  flex-wrap: wrap;
   gap: 9px;
   margin-top: 15px;
   padding-top: 12px;
@@ -1375,7 +1416,17 @@
 }
 .cp-contract-primary,
 .cp-contract-secondary {
-  min-height: 37px;
+  /* Les trois boutons forment un ensemble homogène : même largeur, même
+     hauteur, texte sur une seule ligne et centré. Seule la couleur distingue
+     l'action principale. */
+  flex: 1 1 0;
+  min-width: 150px;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
   padding: 8px 16px;
   border-radius: 0;
   font-size: 12px;
@@ -1383,12 +1434,12 @@
   letter-spacing: .1em;
   text-transform: uppercase;
   cursor: pointer;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
 }
 .cp-contract-primary {
   border: 1px solid var(--cp-yellow);
   background: rgba(255, 214, 64, .1);
   color: var(--cp-yellow);
-  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
 }
 .cp-contract-primary:hover:not(:disabled),
 .cp-contract-primary:focus-visible:not(:disabled) {
@@ -1631,7 +1682,7 @@
   .cp-contract h2 { font-size: 30px; }
   .cp-contract-topline { align-items: flex-start; }
   .cp-contract-actions { justify-content: stretch; }
-  .cp-contract-actions button { flex: 1; padding-inline: 10px; }
+  .cp-contract-actions button { flex: 1 1 100%; min-width: 0; padding-inline: 10px; }
   .cp-contract-empty { align-items: stretch; flex-direction: column; }
   .cp-power-num { min-width: 84px; font-size: 38px; }
   .cp-binary { display: none; }

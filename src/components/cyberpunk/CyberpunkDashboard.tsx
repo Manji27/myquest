@@ -30,6 +30,9 @@ export function CyberpunkDashboard() {
   const cloud = useCloudSync(state, applyRemote)
   const [view, setView] = useState<'jour' | 'missions' | 'progression' | 'souvenirs'>('jour')
   const [editorOpen, setEditorOpen] = useState(false)
+  const [shardSaved, setShardSaved] = useState(false)
+  const shardSavedTimer = useRef<number | undefined>(undefined)
+  const shardInputRef = useRef<HTMLTextAreaElement>(null)
   const today = todayKey()
   const [selectedDate, setSelectedDate] = useState(today)
   const log = state.logs[selectedDate] ?? { date: selectedDate, completed: [], positiveEvent: '' }
@@ -99,6 +102,18 @@ export function CyberpunkDashboard() {
       ...prev,
       logs: { ...prev.logs, [selectedDate]: { ...log, positiveEvent } },
     }))
+  }
+
+  /**
+   * Le moment positif est déjà sauvegardé à chaque frappe ; ce bouton donne un
+   * retour explicite (son + confirmation) et referme le clavier sur mobile.
+   */
+  function confirmPositiveEvent() {
+    playValidation()
+    shardInputRef.current?.blur()
+    setShardSaved(true)
+    window.clearTimeout(shardSavedTimer.current)
+    shardSavedTimer.current = window.setTimeout(() => setShardSaved(false), 1800)
   }
 
   function openJournalDay(key: string) {
@@ -326,6 +341,7 @@ export function CyberpunkDashboard() {
             <div className="cp-shard">
               <div className="cp-shard-title"><span className="ico">▮</span>Datashard · moment positif</div>
               <textarea
+                ref={shardInputRef}
                 className="cp-shard-input"
                 value={log.positiveEvent}
                 onChange={(event) => updatePositiveEvent(event.target.value)}
@@ -333,6 +349,19 @@ export function CyberpunkDashboard() {
                 placeholder="Qu'est-ce qui t'a fait du bien aujourd'hui, choom ?"
                 aria-label="Moment positif du jour"
               />
+              <div className="cp-shard-actions">
+                <span className={`cp-shard-saved ${shardSaved ? 'is-visible' : ''}`} aria-live="polite">
+                  ✓ Enregistré
+                </span>
+                <button
+                  type="button"
+                  className="cp-shard-save"
+                  onClick={confirmPositiveEvent}
+                  disabled={!log.positiveEvent.trim()}
+                >
+                  Valider
+                </button>
+              </div>
               <div className="cp-note" style={{ marginTop: 8 }}>2394823.234423.PORT://4324 database report 23002CA_3478</div>
             </div>
 
