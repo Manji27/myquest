@@ -273,12 +273,6 @@ export function CyberpunkDashboard() {
                   {Math.round(ratio * 100)}<span className="pct">%</span>
                 </div>
                 <div className="cp-power-body">
-                  <div className="cp-power-title">
-                    {ratio >= 1 ? 'Journée parfaite' : ratio >= 0.75 ? 'En feu' : ratio >= 0.4 ? 'Belle lancée' : 'À toi de jouer'}
-                  </div>
-                  <div className="cp-power-danger">
-                    Danger : {ratio >= 0.75 ? 'minimal' : ratio >= 0.4 ? 'modéré' : 'critique'}
-                  </div>
                   <div className={`cp-ticks ${ratio >= 1 ? 'cp-ticks-full' : ''}`}>
                     <i style={{ width: `${Math.max(ratio * 100, 2)}%` }} />
                   </div>
