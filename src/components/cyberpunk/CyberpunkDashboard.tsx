@@ -10,6 +10,7 @@ import { DayNavigator } from '../DayNavigator'
 import { SettingsModal } from './SettingsModal'
 import { CYBERPUNK_ICON_BY_EMOJI, CYBERPUNK_QUEST_ICONS } from './questIcons'
 import { MissionsBoard } from './MissionsBoard'
+import { MissionBriefing } from './MissionBriefing'
 import { useCyberpunkSounds } from './useCyberpunkSounds'
 import previousDayIcon from '../../../references/cyberpunk-ui/cyberpunk-icons/nav-arrow-previous.png'
 import nextDayIcon from '../../../references/cyberpunk-ui/cyberpunk-icons/nav-arrow-next.png'
@@ -257,6 +258,8 @@ export function CyberpunkDashboard() {
             calendarIcon={calendarIcon}
           />
         </div>
+
+        <MissionBriefing state={state} onOpen={() => changeView('missions')} />
 
         <div className="cp-grid">
           {/* ——— Colonne gauche ——— */}
