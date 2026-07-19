@@ -32,31 +32,37 @@ export function MissionBriefing({
   const urgent = Boolean(contract) && !completed && daysLeft <= 3
 
   let ico = '◈'
+  let structured = false
   let body: ReactNode
   if (!contract) {
-    body = (
-      <>
-        TRANSMISSION<span className="sep">·</span>aucun contrat ce mois — définis ta mission, choom
-      </>
-    )
+    body = <>Aucun contrat ce mois — définis ta mission, choom</>
   } else if (completed) {
     ico = '✓'
     body = <>Contrat mensuel bouclé — rien à signaler, choom</>
   } else if (urgent) {
     ico = '⚠'
+    // Titre insécable + méta fixe : tout tient sur une ligne, le titre se
+    // tronque par « … » seulement s'il est très long.
+    structured = true
     body = (
       <>
-        ALERTE — {contract.title} : plus que <span className="hot">{daysLeft} j</span>. File la boucler
+        <span className="b-main">{contract.title}</span>
+        <span className="b-meta">
+          plus que <span className="hot">{daysLeft} j</span> !
+        </span>
       </>
     )
   } else {
+    structured = true
     body = (
       <>
-        Contrat mensuel : {contract.title}
-        <span className="sep">·</span>
-        <span className="hot">{done}/{total}</span>
-        <span className="sep">·</span>
-        <span className="hot">{daysLeft} j</span> restants
+        <span className="b-main">{contract.title}</span>
+        <span className="b-meta">
+          <span className="sep">·</span>
+          <span className="hot">{done}/{total}</span>
+          <span className="sep">·</span>
+          <span className="hot">{daysLeft} j</span>
+        </span>
       </>
     )
   }
@@ -69,7 +75,7 @@ export function MissionBriefing({
       aria-label="Voir mes missions"
     >
       <span className="ico">{ico}</span>
-      <span className="txt">{body}</span>
+      <span className={`txt ${structured ? 'cp-brief-structured' : ''}`}>{body}</span>
       <span className="cta">Ouvrir ›</span>
     </button>
   )

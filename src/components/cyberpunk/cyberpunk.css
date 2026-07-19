@@ -279,6 +279,10 @@
 .cp-mr-banner .ico { color: var(--cp-cyan); font-size: 15px; flex-shrink: 0; }
 .cp-mr-banner.warn .ico { color: var(--cp-yellow); }
 .cp-mr-banner .txt { flex: 1 1 auto; min-width: 0; color: var(--cp-white); font-size: 14.5px; font-weight: 600; letter-spacing: .01em; line-height: 1.35; }
+/* En cours / urgent : titre insécable (tronqué …) + méta toujours visible, sur une ligne. */
+.cp-mr-banner .txt.cp-brief-structured { display: flex; align-items: baseline; gap: 8px; }
+.cp-mr-banner .b-main { flex: 0 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cp-mr-banner .b-meta { flex-shrink: 0; white-space: nowrap; }
 .cp-mr-banner .txt .sep { color: var(--cp-red-nav); margin: 0 8px; }
 .cp-mr-banner .txt .hot { color: var(--cp-yellow); font-weight: 700; }
 .cp-mr-banner .cta {
@@ -311,12 +315,6 @@
   box-shadow: 0 0 14px rgba(255, 214, 64, .2);
 }
 
-@media (max-width: 639px) {
-  /* Le texte passe à la ligne dans sa colonne ; icône et CTA restent en place. */
-  .cp-mr-banner { align-items: flex-start; }
-  .cp-mr-banner .ico,
-  .cp-mr-banner .cta { padding-top: 1px; }
-}
 
 /* ═══════════ SOUS-ONGLETS DE LA MODALE RÉGLAGES ═══════════ */
 .cp-settings-tabs {
